@@ -14,10 +14,7 @@ export async function fetchOneMeme() {
 
   const { data } = await axios.get("https://oauth.reddit.com/r/CryptoCurrencyMemes/top", {
     params: { t: "day", limit: 1 },
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "User-Agent": "ai-crypto-advisor/1.0 (by u/yourusername)"
-    },
+    headers: { Authorization: `Bearer ${token}`, "User-Agent": "ai-crypto-advisor/1.0 (by u/yourusername)" },
     timeout: 8000
   });
 

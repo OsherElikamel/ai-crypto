@@ -12,7 +12,6 @@ export async function fetchFirstHotPost() {
     },
     timeout: 6000
   });
-
   const n = data?.results?.[0];
   if (!n) return null;
   return {
