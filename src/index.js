@@ -16,6 +16,11 @@ import {
   getOneMeme,
 } from "./controllers/providers.controller.js";
 
+import apiRoutes  from "./routes/api.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import quizRoutes from "./routes/quiz.routes.js";
+import voteRoutes from "./routes/vote.routes.js";
+
 const app = express();
 app.use(
   cors({
@@ -28,24 +33,10 @@ app.use(cookieParser());
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-app.get("/api/news/one", getOneNews);
-app.get("/api/prices/one", getOnePrice);
-app.post("/api/insight/one", postOneInsight);
-app.get("/api/meme/one", getOneMeme);
-
-app.post("/auth/register", );
-app.post("/auth/login", );
-app.get("/auth/me", );
-
-app.get("/quiz/questions", );
-app.post("/quiz/answers/:id", );
-
-app.post("/vote/:type/:id", );
-
-// app.get("/api/news", listNews);
-// app.get("/api/news/:id", getNewsById);
-// app.get("/api/insights", listInsights);
-// app.get("/api/insights/:id", getInsightById);
+app.use("/api",  apiRoutes(app,  "/api"));
+app.use("/auth", authRoutes(app, "/auth"));
+app.use("/quiz", quizRoutes(app, "/quiz"));
+app.use("/vote", voteRoutes(app, "/vote"));
 
 connectDB()
   .then(() => {

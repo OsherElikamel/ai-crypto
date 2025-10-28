@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+
 const insightSchema = new Schema({
   title: { type: String, required: true },
   text:  { type: String, required: true },

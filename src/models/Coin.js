@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+
 const coinSchema = new Schema({
   symbol:      { type: String, required: true, uppercase: true, unique: true, index: true },
   name:        { type: String, required: true },
