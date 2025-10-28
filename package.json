@@ -8,7 +8,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "seed": "node --env-file=.env scripts/seed.js"
+    "seed": "node --env-file=.env scripts/seed.js",
+    "daily": "node --env-file=.env scripts/daily.js",
+    "seed:questions": "node scripts/questions.js"
   },
   "repository": {
     "type": "git",
