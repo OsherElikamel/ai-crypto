@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+
 const memeSchema = new Schema({
   imageUrl: { type: String, required: true },
   title: String,

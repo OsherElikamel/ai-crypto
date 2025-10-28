@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+
 const newsItemSchema = new Schema({
   sourceId: { type: String, index: true },
   title:    { type: String, required: true },

@@ -1,11 +1,5 @@
 import Insight from "../models/Insight.js";
 
-/**
- * GET /api/insights
- * Optional query:
- *  - limit (number, default 10)
- *  - page  (number, default 1)  -> skip = (page-1)*limit
- */
 export async function listInsights(req, res) {
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
   const page  = Math.max(1, Number(req.query.page) || 1);
@@ -24,10 +18,6 @@ export async function listInsights(req, res) {
   });
 }
 
-/**
- * GET /api/insights/:id
- * Return a single insight by id (nice for testing later votes).
- */
 export async function getInsightById(req, res) {
   const { id } = req.params;
   const doc = await Insight.findById(id);

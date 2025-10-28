@@ -6,7 +6,7 @@ import Meme from "../src/models/Meme.js";
 import Coin from "../src/models/Coin.js";
 
 await mongoose.connect(process.env.MONGODB_URI);
-console.log("✅ Connected to MongoDB");
+console.log("Connected to MongoDB");
 
 await Insight.deleteMany({});
 await NewsItem.deleteMany({});
