@@ -1,57 +1,77 @@
+import Question from "../models/Questions.js";
 import User from "../models/User.js";
-import { QUIZ_QUESTIONS, NONE } from "../quiz/questions.js";
 
-// Build quick lookup for allowed options (to keep data clean)
-const allowed = QUIZ_QUESTIONS.reduce((acc, q) => {
-  if (q.type === "single" || q.type === "multi") {
-    acc[q.id] = new Set(q.options || []);
-  }
-  return acc;
-}, {});
+const findQuestion = (rows, id) => {
+  return rows.find((q) => q.id === id);
+};
 
-// Normalizers
-function normalizeMulti(value, id) {
-  const set = allowed[id]; // Set or undefined
-  let arr = Array.isArray(value) ? value.filter(v => typeof v === "string") : [];
+const normalizeMulti = (value, id, rows) => {
+  const q = findQuestion(rows, id);
+  let arr = Array.isArray(value)
+    ? value.filter((v) => typeof v === "string")
+    : [];
 
-  if (arr.includes(NONE)) return [];
+  if (arr.includes("None")) return [];
 
-  // Keep only allowed options (if we know them)
-  if (set) arr = arr.filter(v => set.has(v));
+  const opts =
+    q && (q.type === "single" || q.type === "multi") ? q.options || [] : null;
+  if (opts) arr = arr.filter((v) => opts.includes(v));
   return arr;
-}
+};
 
-function normalizeSingle(value, id, fallback = null) {
-  if (value === NONE) return null; 
-  const set = allowed[id];
-  if (!set) return fallback;
-  return set.has(value) ? value : fallback;
-}
+const normalizeSingle = (value, id, rows, fallback = null) => {
+  if (value === "None") return null;
 
-// GET /quiz/questions (JWT)
-export async function getQuizQuestions(_req, res) {
-  res.json({ questions: QUIZ_QUESTIONS });
-}
+  const q = findQuestion(rows, id);
+  const opts =
+    q && (q.type === "single" || q.type === "multi") ? q.options || [] : null;
+  if (!opts) return fallback;
 
-export async function submitQuizAnswers(req, res) {
+  return opts.includes(value) ? value : fallback;
+};
+
+export const getQuizQuestions = async (_req, res) => {
+  try {
+    const questions = await Question.find({ active: true })
+      .sort({ order: 1, _id: 1 })
+      .select("id type question options -_id")
+      .lean();
+
+    return res.json({ questions });
+  } catch (err) {
+    console.error("getQuizQuestions error:", err);
+    return res.status(500).json({ error: "Failed to load questions" });
+  }
+};
+
+export const submitQuizAnswers = async (req, res) => {
   const uid = req.user._id;
   const { answers } = req.body || {};
   if (!answers || typeof answers !== "object") {
     return res.status(400).json({ error: "answers object required" });
   }
 
+  const rows = await Question.find({ active: true })
+    .select("id type options -_id")
+    .lean();
+
   const prefs = {
     // multi
-    coins:        normalizeMulti(answers.coins,        "coins"),
-    contentTypes: normalizeMulti(answers.contentTypes, "contentTypes"),
-    fiat:         normalizeMulti(answers.fiat,         "fiat"),
+    coins: normalizeMulti(answers.coins, "coins", rows),
+    contentTypes: normalizeMulti(answers.contentTypes, "contentTypes", rows),
+    fiat: normalizeMulti(answers.fiat, "fiat", rows),
 
     // single
-    investorType: normalizeSingle(answers.investorType, "investorType", null),
-    risk:         normalizeSingle(answers.risk,         "risk",         null),
-    depth:        normalizeSingle(answers.depth,        "depth",        null),
+    investorType: normalizeSingle(
+      answers.investorType,
+      "investorType",
+      rows,
+      null
+    ),
+    risk: normalizeSingle(answers.risk, "risk", rows, null),
+    depth: normalizeSingle(answers.depth, "depth", rows, null),
 
-    alerts: !!answers.alerts
+    alerts: !!answers.alerts,
   };
 
   await User.findByIdAndUpdate(
@@ -61,4 +81,4 @@ export async function submitQuizAnswers(req, res) {
   );
 
   res.json({ ok: true, onboarded: true, preferences: prefs });
-}
+};

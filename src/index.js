@@ -12,7 +12,7 @@ import voteRoutes from "./routes/vote.routes.js";
 const app = express();
 app.use(
   cors({
-    origin: process.env.ORIGIN || "http://localhost:5173",
+    origin: process.env.ORIGIN || "http://localhost:8080",
     credentials: true,
   })
 );
@@ -21,10 +21,10 @@ app.use(cookieParser());
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-app.use("/api", apiRoutes(app, "/api"));
-app.use("/auth", authRoutes(app, "/auth"));
-app.use("/quiz", quizRoutes(app, "/quiz"));
-app.use("/vote", voteRoutes(app, "/vote"));
+app.use(apiRoutes(app));
+app.use(authRoutes(app));
+app.use(quizRoutes(app));
+app.use(voteRoutes(app));
 
 connectDB()
   .then(() => {
