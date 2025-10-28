@@ -17,7 +17,7 @@ export default function apiRoutes(app, base = "/api") {
     app.post(`${base}/insight/one`, postOneInsight);
     app.get(`${base}/meme/one`,     getOneMeme);
 
-    // DB-backed examples 
+    // DB-backed examples for development
     // app.get(`${base}/news`, listNews);
     // app.get(`${base}/news/:id`, getNewsById);
     // app.get(`${base}/insights`, listInsights);

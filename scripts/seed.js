@@ -1,18 +1,23 @@
 import "dotenv/config";
 import mongoose from "mongoose";
+import bcrypt from "bcrypt";
+
 import Insight from "../src/models/Insight.js";
 import NewsItem from "../src/models/NewsItem.js";
 import Meme from "../src/models/Meme.js";
 import Coin from "../src/models/Coin.js";
+import User from "../src/models/User.js";
 
 await mongoose.connect(process.env.MONGODB_URI);
 console.log("Connected to MongoDB");
 
+// Clean up old demo data (but keep users)
 await Insight.deleteMany({});
 await NewsItem.deleteMany({});
 await Meme.deleteMany({});
 await Coin.deleteMany({});
 
+// Seed Insights
 await Insight.insertMany([
   {
     title: "Bitcoin Dominance Rises",
@@ -26,6 +31,7 @@ await Insight.insertMany([
   },
 ]);
 
+// Seed News Items
 await NewsItem.insertMany([
   {
     title: "Spot Bitcoin ETFs see inflows",
@@ -41,6 +47,7 @@ await NewsItem.insertMany([
   },
 ]);
 
+// Seed Memes
 await Meme.insertMany([
   {
     imageUrl: "https://picsum.photos/seed/crypto1/600/400",
@@ -54,11 +61,45 @@ await Meme.insertMany([
   },
 ]);
 
+// Seed Coins
 await Coin.insertMany([
   { symbol: "BTC", name: "Bitcoin", coingeckoId: "bitcoin" },
   { symbol: "ETH", name: "Ethereum", coingeckoId: "ethereum" },
   { symbol: "SOL", name: "Solana", coingeckoId: "solana" },
 ]);
 
+// Create or update demo user
+const demoEmail = "demo@example.com";
+const demoPassword = "secret123";
+const passwordHash = await bcrypt.hash(demoPassword, 10);
+
+const demoPrefs = {
+  coins: ["BTC", "ETH"],
+  investorType: "HODL",
+  risk: "MEDIUM",
+  contentTypes: ["News", "Prices"],
+  fiat: ["USD"],
+  depth: "MEDIUM",
+  alerts: true,
+  avoid: [],
+};
+
+await User.findOneAndUpdate(
+  { email: demoEmail },
+  {
+    $set: {
+      name: "Demo User",
+      email: demoEmail,
+      passwordHash,
+      onboarded: true,
+      preferences: demoPrefs,
+    },
+  },
+  { upsert: true, new: true }
+);
+
 console.log("Database seeded successfully!");
+console.log("Demo user ready:");
+console.log(`Email: ${demoEmail}`);
+console.log(`Password: ${demoPassword}`);
 process.exit(0);
