@@ -1,22 +1,10 @@
+import cookieParser from "cookie-parser";
+import cors from "cors";
 import "dotenv/config";
 import express from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
 import connectDB from "./db.js";
-import {
-  listInsights,
-  getInsightById,
-} from "./controllers/insight.controller.js";
-import { listNews, getNewsById } from "./controllers/news.controller.js";
 
-import {
-  getOneNews,
-  getOnePrice,
-  postOneInsight,
-  getOneMeme,
-} from "./controllers/providers.controller.js";
-
-import apiRoutes  from "./routes/api.routes.js";
+import apiRoutes from "./routes/api.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import quizRoutes from "./routes/quiz.routes.js";
 import voteRoutes from "./routes/vote.routes.js";
@@ -33,7 +21,7 @@ app.use(cookieParser());
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
-app.use("/api",  apiRoutes(app,  "/api"));
+app.use("/api", apiRoutes(app, "/api"));
 app.use("/auth", authRoutes(app, "/auth"));
 app.use("/quiz", quizRoutes(app, "/quiz"));
 app.use("/vote", voteRoutes(app, "/vote"));

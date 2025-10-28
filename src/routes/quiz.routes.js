@@ -1,12 +1,12 @@
-const notImpl = (_req, res) => res.status(501).json({ error: "Not implemented yet" });
+import { getQuizQuestions, submitQuizAnswers } from "../controllers/quiz.controller.js";
+import { authRequired } from "../middleware/auth.js";
 
 let registered = false;
 
 export default function quizRoutes(app, base = "/quiz") {
   if (!registered) {
-    // Later we'll add: authRequired + getQuizQuestions / submitQuizAnswers
-    app.get(`${base}/questions`, notImpl);
-    app.post(`${base}/answers`,  notImpl);
+    app.get(`${base}/questions`, authRequired, getQuizQuestions);
+    app.post(`${base}/answers`,  authRequired, submitQuizAnswers);
 
     registered = true;
     console.log("[routes] quiz mounted at", base);
