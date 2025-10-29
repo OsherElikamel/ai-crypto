@@ -8,6 +8,7 @@ import apiRoutes from "./routes/api.routes.js";
 import authRoutes from "./routes/auth.routes.js";
 import quizRoutes from "./routes/quiz.routes.js";
 import voteRoutes from "./routes/vote.routes.js";
+import contentRoutes from "./routes/content.routes.js";
 
 const app = express();
 app.use(
@@ -20,6 +21,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
+
+app.use(contentRoutes(app));
 
 app.use(apiRoutes(app));
 app.use(authRoutes(app));
