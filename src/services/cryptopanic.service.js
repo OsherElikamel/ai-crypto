@@ -1,8 +1,8 @@
 import axios from "axios";
+import "dotenv/config";
 
 export async function fetchFirstHotPost() {
-  const plan = process.env.CRYPTOPANIC_PLAN || "developer";
-  const { data } = await axios.get(`https://cryptopanic.com/api/${plan}/v2/posts/`, {
+  const { data } = await axios.get(process.env.CRYPTOPANIC_URL, {
     params: {
       auth_token: process.env.CRYPTOPANIC_TOKEN,
       filter: "hot",
