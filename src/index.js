@@ -32,7 +32,7 @@ app.use(voteRoutes(app));
 connectDB()
   .then(() => {
     const PORT = process.env.PORT || 8080;
-    app.listen(PORT);
+    app.listen(PORT, "0.0.0.0", () => console.log(`Listening on ${PORT}`));
   })
   .catch((err) => {
     console.error("DB connect failed:", err);
