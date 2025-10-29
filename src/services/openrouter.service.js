@@ -1,10 +1,11 @@
 import axios from "axios";
+import "dotenv/config";
 
 export async function generateInsight(investorType, coins) {
   const prompt = `Give a 1-2 sentence crypto tip for a ${investorType} who follows ${coins.join(", ")}.`;
 
   const { data } = await axios.post(
-    "https://openrouter.ai/api/v1/chat/completions",
+    process.env.OPENROUTER_URL,
     {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
