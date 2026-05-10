@@ -51,6 +51,7 @@ export interface NewsItem {
   dislikedBy: string[];
   likeCount?: number;
   dislikeCount?: number;
+  createdAt?: string;
 }
 
 export interface Meme {

@@ -1,9 +1,10 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.tsx";
 import { CircularProgress, Box } from "@mui/material";
-import Auth from "../components/Auth/Auth.tsx";
-import Onboarding from "../components/Onboarding/Onboarding.tsx";
-import Dashboard from "../components/Dashboard/Dashboard.tsx";
+import Auth from "../pages/AuthPage.tsx";
+import Onboarding from "../pages/OnboardingPage.tsx";
+import Dashboard from "../pages/DashboardPage.tsx";
+import AppShell from "../components/layout/AppShell.tsx";
 import type { ReactNode } from "react";
 
 function LoadingScreen() {
@@ -48,21 +49,15 @@ export default function AppRoutes() {
         }
       />
       <Route
-        path="/onboarding"
         element={
           <ProtectedRoute>
-            <Onboarding />
+            <AppShell />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
+      >
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Route>
       <Route path="*" element={<Navigate to="/auth" replace />} />
     </Routes>
   );

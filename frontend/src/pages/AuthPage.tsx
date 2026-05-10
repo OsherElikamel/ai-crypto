@@ -2,6 +2,7 @@ import {
   Alert,
   Box,
   Button,
+  Stack,
   Tab,
   Tabs,
   TextField,
@@ -12,10 +13,10 @@ import {
   getPasswordStrength,
   isValidEmail,
   strengthHint,
-} from "../../utils/inputsValidation.utils.ts";
+} from "../utils/inputsValidation.utils.ts";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext.tsx";
-import api from "../../utils/api.ts";
+import { useAuth } from "../contexts/AuthContext.tsx";
+import { loginUser, registerUser } from "../services/auth.service.ts";
 
 type AuthMode = "signin" | "signup";
 
@@ -61,13 +62,10 @@ const Auth = () => {
     setSubmitting(true);
     setError(null);
     try {
-      const body =
+      const res =
         mode === "signin"
-          ? { email, password }
-          : { name: name.trim(), email, password };
-      const endpoint = mode === "signin" ? "/auth/login" : "/auth/register";
-
-      const res = await api.post(endpoint, body);
+          ? await loginUser({ email, password })
+          : await registerUser({ name: name.trim(), email, password });
       const data = res.data;
 
       const token: string = data?.token;
@@ -92,9 +90,16 @@ const Auth = () => {
   };
 
   return (
-    <div>
-      <div>
-        <div>
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+      }}
+    >
+      <Box sx={{ width: "100%", maxWidth: 420, px: 3 }}>
+        <Box>
           <Box sx={{ width: "100%" }}>
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
               <Tabs
@@ -118,13 +123,15 @@ const Auth = () => {
             </Box>
           </Box>
 
-          <h1>{mode === "signin" ? "Welcome back" : "Join us"}</h1>
-          <p>
+          <Typography variant="h4" fontWeight={700} sx={{ mt: 3 }}>
+            {mode === "signin" ? "Welcome back" : "Join us"}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
             {mode === "signin"
               ? "Enter your email and password to continue"
               : "Fill in your details to create an account"}
-          </p>
-        </div>
+          </Typography>
+        </Box>
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -132,12 +139,8 @@ const Auth = () => {
           </Alert>
         )}
 
-        <div>
-          <form
-            onSubmit={onSubmit}
-            noValidate
-            aria-labelledby={mode === "signin" ? "tab-signin" : "tab-signup"}
-          >
+        <Box component="form" onSubmit={onSubmit} noValidate aria-labelledby={mode === "signin" ? "tab-signin" : "tab-signup"}>
+          <Stack spacing={2}>
             {mode === "signup" && (
               <TextField
                 id="name"
@@ -205,27 +208,27 @@ const Auth = () => {
                   : "Create account"}
             </Button>
 
-            <p>
+            <Typography variant="body2" align="center">
               {mode === "signin" ? (
                 <>
                   Don't have an account?{" "}
-                  <Button variant="contained" onClick={() => setMode("signup")}>
+                  <Button size="small" onClick={() => setMode("signup")}>
                     Create one
                   </Button>
                 </>
               ) : (
                 <>
                   Already have an account?{" "}
-                  <Button variant="contained" onClick={() => setMode("signin")}>
+                  <Button size="small" onClick={() => setMode("signin")}>
                     Sign in
                   </Button>
                 </>
               )}
-            </p>
-          </form>
-        </div>
-      </div>
-    </div>
+            </Typography>
+          </Stack>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

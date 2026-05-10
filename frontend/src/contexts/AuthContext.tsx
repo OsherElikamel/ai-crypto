@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import api from "../utils/api.ts";
+import { getMe } from "../services/auth.service.ts";
 import type { User } from "../types/index.ts";
 
 interface AuthContextValue {
@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await api.get("/auth/me");
+        const res = await getMe();
         if (!cancelled) setUser(res.data.user);
       } catch {
         if (!cancelled) {

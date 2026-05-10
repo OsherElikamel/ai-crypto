@@ -20,8 +20,8 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../utils/api.ts";
-import type { Question } from "../../types/index.ts";
+import { getQuestions, submitAnswers } from "../services/quiz.service.ts";
+import type { Question } from "../types/index.ts";
 
 type AnswerValue = string[] | string | boolean | null;
 
@@ -50,7 +50,7 @@ const Onboarding = () => {
 
     (async () => {
       try {
-        const res = await api.get("/quiz/questions");
+        const res = await getQuestions();
         const data: Question[] = res.data?.questions || [];
         if (!alive) return;
         setQuestions(data);
@@ -140,7 +140,7 @@ const Onboarding = () => {
         }, {}),
       };
 
-      const res = await api.post("/quiz/answers", payload);
+      const res = await submitAnswers(payload.answers);
 
       if (res.data?.ok) {
         setSubmitted(true);
