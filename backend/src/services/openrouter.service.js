@@ -1,22 +1,22 @@
 import axios from "axios";
-import "dotenv/config";
+import config from "../config.js";
 
 export async function generateInsight(investorType, coins) {
   const prompt = `Give a 1-2 sentence crypto tip for a ${investorType} who follows ${coins.join(", ")}.`;
 
   const { data } = await axios.post(
-    process.env.OPENROUTER_URL,
+    config.openrouter.url,
     {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.7
+      temperature: 0.7,
     },
     {
       headers: {
-        Authorization: `Bearer ${process.env.OPENROUTER_KEY}`,
-        "Content-Type": "application/json"
+        Authorization: `Bearer ${config.openrouter.key}`,
+        "Content-Type": "application/json",
       },
-      timeout: 10000
+      timeout: 10000,
     }
   );
 

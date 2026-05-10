@@ -1,12 +1,13 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import config from "../config.js";
 
 function sign(user) {
   return jwt.sign(
     { _id: user._id, email: user.email, onboarded: user.onboarded },
-    process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    config.jwtSecret,
+    { expiresIn: config.jwtExpiresIn }
   );
 }
 

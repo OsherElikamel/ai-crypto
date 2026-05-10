@@ -1,8 +1,8 @@
 import {
   Alert,
   Card,
-  CardContent,
   CardActions,
+  CardContent,
   CardHeader,
   Chip,
   Divider,
@@ -14,8 +14,17 @@ import {
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbDownOffAltIcon from "@mui/icons-material/ThumbDownOffAlt";
 import ClearIcon from "@mui/icons-material/Clear";
+import type { Meme } from "../../types/index.ts";
 
-const MemeSection = ({ item, loading, onLike, onDislike, onClear }) => {
+interface MemeSectionProps {
+  item: Meme | null;
+  loading: boolean;
+  onLike: (item: Meme) => void;
+  onDislike: (item: Meme) => void;
+  onClear: (item: Meme) => void;
+}
+
+const MemeSection = ({ item, loading, onLike, onDislike, onClear }: MemeSectionProps) => {
   return (
     <Card>
       <CardHeader title="Fun Crypto Meme" />
@@ -57,13 +66,13 @@ const MemeSection = ({ item, loading, onLike, onDislike, onClear }) => {
           <ThumbUpOffAltIcon />
         </IconButton>
         <Typography variant="caption">
-          {(item?.likedBy?.length ?? 0).toString()}
+          {item ? (item.likeCount ?? item.likedBy?.length ?? 0) : 0}
         </Typography>
         <IconButton aria-label="dislike" onClick={() => item && onDislike(item)}>
           <ThumbDownOffAltIcon />
         </IconButton>
         <Typography variant="caption">
-          {(item?.dislikedBy?.length ?? 0).toString()}
+          {item ? (item.dislikeCount ?? item.dislikedBy?.length ?? 0) : 0}
         </Typography>
         <IconButton aria-label="clear vote" onClick={() => item && onClear(item)}>
           <ClearIcon />

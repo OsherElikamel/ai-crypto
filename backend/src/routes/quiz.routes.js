@@ -1,15 +1,10 @@
+import { Router } from "express";
 import { getQuizQuestions, submitQuizAnswers } from "../controllers/quiz.controller.js";
 import { authRequired } from "../middleware/auth.js";
 
-let registered = false;
+const router = Router();
 
-export default function quizRoutes(app, base = "/quiz") {
-  if (!registered) {
-    app.get(`${base}/questions`, authRequired, getQuizQuestions);
-    app.post(`${base}/answers`,  authRequired, submitQuizAnswers);
+router.get("/questions", authRequired, getQuizQuestions);
+router.post("/answers", authRequired, submitQuizAnswers);
 
-    registered = true;
-    console.log("[routes] quiz mounted at", base);
-  }
-  return (_req, _res, next) => next();
-}
+export default router;

@@ -9,13 +9,22 @@ import {
   Chip,
   Divider,
   IconButton,
+  Link,
   Skeleton,
   Stack,
   Typography,
-  Link
 } from "@mui/material";
+import type { NewsItem } from "../../types/index.ts";
 
-const NewsSection = ({ items, loading, onLike, onDislike, onClear }) => {
+interface NewsSectionProps {
+  items: NewsItem[];
+  loading: boolean;
+  onLike: (item: NewsItem) => void;
+  onDislike: (item: NewsItem) => void;
+  onClear: (item: NewsItem) => void;
+}
+
+const NewsSection = ({ items, loading, onLike, onDislike, onClear }: NewsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card>
@@ -51,13 +60,21 @@ const NewsSection = ({ items, loading, onLike, onDislike, onClear }) => {
                     )}
                   </Stack>
                   <Stack direction="row" alignItems="center" gap={0.5}>
-                    <IconButton aria-label="like" onClick={() => onLike(n)}><ThumbUpOffAltIcon /></IconButton>
-                    <Typography variant="caption">{(n.likedBy?.length ?? 0).toString()}</Typography>
-
-                    <IconButton aria-label="dislike" onClick={() => onDislike(n)}><ThumbDownOffAltIcon /></IconButton>
-                    <Typography variant="caption">{(n.dislikedBy?.length ?? 0).toString()}</Typography>
-
-                    <IconButton aria-label="clear vote" onClick={() => onClear(n)}><ClearIcon /></IconButton>
+                    <IconButton aria-label="like" onClick={() => onLike(n)}>
+                      <ThumbUpOffAltIcon />
+                    </IconButton>
+                    <Typography variant="caption">
+                      {n.likeCount ?? n.likedBy?.length ?? 0}
+                    </Typography>
+                    <IconButton aria-label="dislike" onClick={() => onDislike(n)}>
+                      <ThumbDownOffAltIcon />
+                    </IconButton>
+                    <Typography variant="caption">
+                      {n.dislikeCount ?? n.dislikedBy?.length ?? 0}
+                    </Typography>
+                    <IconButton aria-label="clear vote" onClick={() => onClear(n)}>
+                      <ClearIcon />
+                    </IconButton>
                   </Stack>
                 </Stack>
               </div>

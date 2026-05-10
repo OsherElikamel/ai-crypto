@@ -1,23 +1,38 @@
-import { Box, Button, Tab, Tabs, TextField, Typography } from "@mui/material";
-import { useMemo, useState } from "react";
+import {
+  Alert,
+  Box,
+  Button,
+  Tab,
+  Tabs,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useMemo, useState, type FormEvent } from "react";
 import {
   getPasswordStrength,
   isValidEmail,
   strengthHint,
-} from "../../utils/inputsValidation.utils";
+} from "../../utils/inputsValidation.utils.ts";
 import { useNavigate } from "react-router-dom";
-import { buildRequest } from "../../utils/auth.utils";
+import { useAuth } from "../../contexts/AuthContext.tsx";
+import api from "../../utils/api.ts";
+
+type AuthMode = "signin" | "signup";
 
 const Auth = () => {
-  const [mode, setMode] = useState("signin");
+  const [mode, setMode] = useState<AuthMode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
   const isEmailValid = useMemo(() => isValidEmail(email), [email]);
-  const passwordStrength = useMemo(
+  const passwordStrengthText = useMemo(
     () => strengthHint(getPasswordStrength(password)),
     [password]
   );
@@ -25,15 +40,11 @@ const Auth = () => {
   const canSubmit = useMemo(() => {
     if (submitting) return false;
     if (!isEmailValid || password.length < 8) return false;
-    if (mode === "signup") {
-      if (!name.trim()) return false;
-    }
+    if (mode === "signup" && !name.trim()) return false;
     return true;
   }, [submitting, isEmailValid, password, mode, name]);
 
-  const navigate = useNavigate();
-
-  const inferNeedsOnboardingFromToken = (token) => {
+  const inferNeedsOnboardingFromToken = (token: string): boolean => {
     try {
       const base64 = token.split(".")[1];
       const decoded = JSON.parse(atob(base64));
@@ -43,11 +54,12 @@ const Auth = () => {
     }
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
 
     setSubmitting(true);
+    setError(null);
     try {
       const body =
         mode === "signin"
@@ -55,22 +67,25 @@ const Auth = () => {
           : { name: name.trim(), email, password };
       const endpoint = mode === "signin" ? "/auth/login" : "/auth/register";
 
-      const res = await buildRequest(endpoint, body);
+      const res = await api.post(endpoint, body);
       const data = res.data;
 
-      const token = data?.token;
-      if (token) localStorage.setItem("auth_token", token);
+      const token: string = data?.token;
+      if (!token) throw new Error("No token received");
 
       const needsOnboarding =
         typeof data?.needsOnboarding === "boolean"
           ? data.needsOnboarding
           : inferNeedsOnboardingFromToken(token);
 
+      login(token, needsOnboarding);
       navigate(needsOnboarding ? "/onboarding" : "/dashboard", {
         replace: true,
       });
-    } catch (err) {
-      alert(err.message || "Something went wrong");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong";
+      setError(message);
     } finally {
       setSubmitting(false);
     }
@@ -84,7 +99,7 @@ const Auth = () => {
             <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
               <Tabs
                 value={mode}
-                onChange={(_, v) => setMode(v)}
+                onChange={(_, v: AuthMode) => setMode(v)}
                 aria-label="auth tabs"
               >
                 <Tab
@@ -110,6 +125,12 @@ const Auth = () => {
               : "Fill in your details to create an account"}
           </p>
         </div>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
 
         <div>
           <form
@@ -166,7 +187,7 @@ const Auth = () => {
             </Button>
 
             <Typography variant="caption" display="block" gutterBottom>
-              {password && passwordStrength}
+              {password && passwordStrengthText}
             </Typography>
 
             <Button
@@ -177,11 +198,11 @@ const Auth = () => {
             >
               {submitting
                 ? mode === "signin"
-                  ? "Signing in…"
-                  : "Creating account…"
+                  ? "Signing in..."
+                  : "Creating account..."
                 : mode === "signin"
-                ? "Sign in"
-                : "Create account"}
+                  ? "Sign in"
+                  : "Create account"}
             </Button>
 
             <p>

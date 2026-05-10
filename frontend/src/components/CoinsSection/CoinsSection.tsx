@@ -13,8 +13,17 @@ import {
 import ThumbUpOffAltIcon from "@mui/icons-material/ThumbUpOffAlt";
 import ThumbDownOffAltIcon from "@mui/icons-material/ThumbDownOffAlt";
 import ClearIcon from "@mui/icons-material/Clear";
+import type { Coin } from "../../types/index.ts";
 
-const CoinsSection = ({ items, loading, onLike, onDislike, onClear }) => {
+interface CoinsSectionProps {
+  items: Coin[];
+  loading: boolean;
+  onLike: (item: Coin) => void;
+  onDislike: (item: Coin) => void;
+  onClear: (item: Coin) => void;
+}
+
+const CoinsSection = ({ items, loading, onLike, onDislike, onClear }: CoinsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card>
@@ -36,11 +45,7 @@ const CoinsSection = ({ items, loading, onLike, onDislike, onClear }) => {
                 <Typography variant="body1" sx={{ minWidth: 64 }}>
                   {c.symbol}
                 </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ flex: 1 }}
-                >
+                <Typography variant="body2" color="text.secondary" sx={{ flex: 1 }}>
                   {c.name}
                 </Typography>
                 <Chip size="small" label={c.coingeckoId} />
@@ -48,13 +53,13 @@ const CoinsSection = ({ items, loading, onLike, onDislike, onClear }) => {
                   <ThumbUpOffAltIcon />
                 </IconButton>
                 <Typography variant="caption">
-                  {(c.likedBy?.length ?? 0).toString()}
+                  {c.likeCount ?? c.likedBy?.length ?? 0}
                 </Typography>
                 <IconButton aria-label="dislike" onClick={() => onDislike(c)}>
                   <ThumbDownOffAltIcon />
                 </IconButton>
                 <Typography variant="caption">
-                  {(c.dislikedBy?.length ?? 0).toString()}
+                  {c.dislikeCount ?? c.dislikedBy?.length ?? 0}
                 </Typography>
                 <IconButton aria-label="clear vote" onClick={() => onClear(c)}>
                   <ClearIcon />

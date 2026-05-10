@@ -1,17 +1,18 @@
 import axios from "axios";
-import "dotenv/config";
+import config from "../config.js";
 
 export async function fetchFirstHotPost() {
-  const { data } = await axios.get(process.env.CRYPTOPANIC_URL, {
+  const { data } = await axios.get(config.cryptopanic.url, {
     params: {
-      auth_token: process.env.CRYPTOPANIC_TOKEN,
+      auth_token: config.cryptopanic.token,
       filter: "hot",
       currencies: "BTC,ETH",
       regions: "en",
-      page: 1
+      page: 1,
     },
-    timeout: 6000
+    timeout: 6000,
   });
+
   const n = data?.results?.[0];
   if (!n) return null;
   return {
@@ -21,6 +22,6 @@ export async function fetchFirstHotPost() {
     publishedAt: n.published_at,
     kind: n.kind,
     url: n.url,
-    source: n.domain
+    source: n.domain,
   };
 }

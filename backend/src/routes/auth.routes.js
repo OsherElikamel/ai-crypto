@@ -1,16 +1,11 @@
+import { Router } from "express";
 import { register, login, me } from "../controllers/auth.controller.js";
 import { authRequired } from "../middleware/auth.js";
 
-let registered = false;
+const router = Router();
 
-export default function authRoutes(app, base = "/auth") {
-  if (!registered) {
-    app.post(`${base}/register`, register);
-    app.post(`${base}/login`,    login);
-    app.get(`${base}/me`,        authRequired, me);
+router.post("/register", register);
+router.post("/login", login);
+router.get("/me", authRequired, me);
 
-    registered = true;
-    console.log("[routes] auth mounted at", base);
-  }
-  return (_req, _res, next) => next();
-}
+export default router;

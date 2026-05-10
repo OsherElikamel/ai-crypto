@@ -1,2 +1,1 @@
-# ai-crypto-backend
-Node.js + Express + MongoDB (Mongoose) backend for the AI Crypto Advisor.
+See the root [README.md](../README.md) for full project documentation.

@@ -18,25 +18,27 @@ import {
   Switch,
   Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../utils/api";
-import { QuestionType } from "../../enums/questionType.enum";
+import api from "../../utils/api.ts";
+import type { Question } from "../../types/index.ts";
 
-const initAnswersFromQuestions = (questions) =>
-  questions.map((currentQuestion) => {
-    const currentType = String(currentQuestion.type || "").toLowerCase();
-    if (currentType === "multi") return [];
-    if (currentType === "single") return "";
-    if (currentType === "boolean") return false;
+type AnswerValue = string[] | string | boolean | null;
+
+const initAnswersFromQuestions = (questions: Question[]): AnswerValue[] =>
+  questions.map((q) => {
+    const t = q.type;
+    if (t === "multi") return [] as string[];
+    if (t === "single") return "";
+    if (t === "boolean") return false;
     return null;
   });
 
 const Onboarding = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [answers, setAnswers] = useState<AnswerValue[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
   const navigate = useNavigate();
@@ -48,42 +50,39 @@ const Onboarding = () => {
 
     (async () => {
       try {
-        const res = await api.get(`/quiz/questions`);
-        const data = res.data?.questions || [];
+        const res = await api.get("/quiz/questions");
+        const data: Question[] = res.data?.questions || [];
         if (!alive) return;
         setQuestions(data);
         setAnswers(initAnswersFromQuestions(data));
-      } catch (err) {
+      } catch (err: unknown) {
         if (!alive) return;
-        setError(err?.message || "Couldn't load questions");
+        const message = err instanceof Error ? err.message : "Couldn't load questions";
+        setError(message);
       } finally {
         setLoading(false);
       }
     })();
 
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, []);
 
-  const setAnswerAt = (currentIndex, value) => {
+  const setAnswerAt = (index: number, value: AnswerValue) => {
     setAnswers((prev) => {
       const copy = [...prev];
-      copy[currentIndex] = value;
+      copy[index] = value;
       return copy;
     });
   };
 
-  const toggleMulti = (currentIndex, option) => {
+  const toggleMulti = (index: number, option: string) => {
     setAnswers((prev) => {
-      const current = Array.isArray(prev[currentIndex])
-        ? [...prev[currentIndex]]
-        : [];
+      const current = Array.isArray(prev[index]) ? [...(prev[index] as string[])] : [];
       const hit = current.indexOf(option);
       if (hit >= 0) current.splice(hit, 1);
       else current.push(option);
       const copy = [...prev];
-      copy[currentIndex] = current;
+      copy[index] = current;
       return copy;
     });
   };
@@ -92,16 +91,12 @@ const Onboarding = () => {
     if (!questions.length) return false;
     return questions.every((q, i) => {
       const a = answers[i];
-      const t = String(q.type || "").toLowerCase();
-      switch (t) {
+      switch (q.type) {
         case "multi":
-        case QuestionType.MULTI:
           return Array.isArray(a) && a.length > 0;
         case "single":
-        case QuestionType.SINGLE:
           return typeof a === "string" && a.trim() !== "";
         case "boolean":
-        case QuestionType.BOOLEAN:
           return typeof a === "boolean";
         default:
           return false;
@@ -112,16 +107,12 @@ const Onboarding = () => {
   const answeredCount = useMemo(() => {
     return questions.reduce((acc, q, i) => {
       const a = answers[i];
-      const t = String(q.type || "").toLowerCase();
-      switch (t) {
+      switch (q.type) {
         case "multi":
-        case QuestionType.MULTI:
           return acc + (Array.isArray(a) && a.length > 0 ? 1 : 0);
         case "single":
-        case QuestionType.SINGLE:
           return acc + (typeof a === "string" && a.trim() !== "" ? 1 : 0);
         case "boolean":
-        case QuestionType.BOOLEAN:
           return acc + (typeof a === "boolean" ? 1 : 0);
         default:
           return acc;
@@ -129,29 +120,27 @@ const Onboarding = () => {
     }, 0);
   }, [questions, answers]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitted(false);
     setError("");
 
     try {
       const payload = {
-        answers: questions.reduce((acc, q, i) => {
-          const t = String(q.type || "").toLowerCase();
+        answers: questions.reduce<Record<string, unknown>>((acc, q, i) => {
           const val = answers[i];
-          if (t === "multi") {
-            const arr = Array.isArray(val) ? val : [];
-            acc[q.id] = arr;
-          } else if (t === "single") {
+          if (q.type === "multi") {
+            acc[q.id] = Array.isArray(val) ? val : [];
+          } else if (q.type === "single") {
             acc[q.id] = typeof val === "string" ? val : "";
-          } else if (t === "boolean") {
+          } else if (q.type === "boolean") {
             acc[q.id] = !!val;
           }
           return acc;
         }, {}),
       };
 
-      const res = await api.post(`/quiz/answers`, payload);
+      const res = await api.post("/quiz/answers", payload);
 
       if (res.data?.ok) {
         setSubmitted(true);
@@ -159,8 +148,9 @@ const Onboarding = () => {
       } else {
         throw new Error("Unexpected response saving preferences");
       }
-    } catch (err) {
-      setError(err?.message || "Submission failed");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Submission failed";
+      setError(message);
     }
   };
 
@@ -169,7 +159,7 @@ const Onboarding = () => {
       <Stack spacing={3}>
         <Box>
           <Typography variant="h4" fontWeight={700} gutterBottom>
-            Onboarding Page
+            Onboarding
           </Typography>
           <Typography variant="body1" color="text.secondary">
             Answer a few quick questions so we can tailor your crypto feed
@@ -184,12 +174,12 @@ const Onboarding = () => {
           <Stack spacing={2}>
             {questions.map((currentQuestion, currentIndex) => (
               <Card
-                key={`${currentQuestion.id || currentIndex}`}
+                key={currentQuestion.id || currentIndex}
                 variant="outlined"
                 sx={{ borderRadius: 3 }}
               >
                 <CardContent>
-                  {String(currentQuestion.type).toLowerCase() !== "boolean" && (
+                  {currentQuestion.type !== "boolean" && (
                     <FormLabel component="legend">
                       <Typography variant="h6">
                         {currentQuestion.question}
@@ -197,14 +187,11 @@ const Onboarding = () => {
                     </FormLabel>
                   )}
 
-                  {/* SINGLE */}
-                  {String(currentQuestion.type).toLowerCase() === "single" && (
+                  {currentQuestion.type === "single" && (
                     <FormControl component="fieldset" sx={{ mt: 1 }}>
                       <RadioGroup
-                        value={answers[currentIndex] ?? ""}
-                        onChange={(e) =>
-                          setAnswerAt(currentIndex, e.target.value)
-                        }
+                        value={(answers[currentIndex] as string) ?? ""}
+                        onChange={(e) => setAnswerAt(currentIndex, e.target.value)}
                       >
                         {currentQuestion.options?.map((opt) => (
                           <FormControlLabel
@@ -218,13 +205,12 @@ const Onboarding = () => {
                     </FormControl>
                   )}
 
-                  {/* MULTI */}
-                  {String(currentQuestion.type).toLowerCase() === "multi" && (
+                  {currentQuestion.type === "multi" && (
                     <FormGroup sx={{ mt: 1 }}>
                       {currentQuestion.options?.map((opt) => {
                         const isChecked =
                           Array.isArray(answers[currentIndex]) &&
-                          answers[currentIndex].includes(opt);
+                          (answers[currentIndex] as string[]).includes(opt);
                         return (
                           <FormControlLabel
                             key={opt}
@@ -241,8 +227,7 @@ const Onboarding = () => {
                     </FormGroup>
                   )}
 
-                  {/* BOOLEAN */}
-                  {String(currentQuestion.type).toLowerCase() === "boolean" && (
+                  {currentQuestion.type === "boolean" && (
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <FormLabel component="legend" sx={{ mr: 1 }}>
                         <Typography variant="h6">
@@ -251,9 +236,7 @@ const Onboarding = () => {
                       </FormLabel>
                       <Switch
                         checked={!!answers[currentIndex]}
-                        onChange={(e) =>
-                          setAnswerAt(currentIndex, e.target.checked)
-                        }
+                        onChange={(e) => setAnswerAt(currentIndex, e.target.checked)}
                       />
                       <Typography variant="body2" color="text.secondary">
                         {answers[currentIndex] ? "Yes" : "No"}
