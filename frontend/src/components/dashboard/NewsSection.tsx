@@ -11,17 +11,19 @@ import {
 } from "@mui/material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import VoteButtons from "../ui/VoteButtons.tsx";
+import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { NewsItem } from "../../types/index.ts";
 
 interface NewsSectionProps {
   items: NewsItem[];
   loading: boolean;
+  voteStatuses?: Record<string, VoteStatus>;
   onLike: (item: NewsItem) => void;
   onDislike: (item: NewsItem) => void;
   onClear: (item: NewsItem) => void;
 }
 
-const NewsSection = ({ items, loading, onLike, onDislike, onClear }: NewsSectionProps) => {
+const NewsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onClear }: NewsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -60,7 +62,7 @@ const NewsSection = ({ items, loading, onLike, onDislike, onClear }: NewsSection
                       </Typography>
                     )}
                     <Box sx={{ flex: 1 }} />
-                    <VoteButtons item={n} onLike={onLike} onDislike={onDislike} onClear={onClear} />
+                    <VoteButtons item={n} status={voteStatuses[n._id]} onLike={onLike} onDislike={onDislike} onClear={onClear} />
                   </Stack>
                 </Stack>
                 {i < list.length - 1 && <Divider />}

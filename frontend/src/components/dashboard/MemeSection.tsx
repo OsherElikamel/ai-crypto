@@ -10,17 +10,19 @@ import {
 } from "@mui/material";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
 import VoteButtons from "../ui/VoteButtons.tsx";
+import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { Meme } from "../../types/index.ts";
 
 interface MemeSectionProps {
   item: Meme | null;
   loading: boolean;
+  voteStatuses?: Record<string, VoteStatus>;
   onLike: (item: Meme) => void;
   onDislike: (item: Meme) => void;
   onClear: (item: Meme) => void;
 }
 
-const MemeSection = ({ item, loading, onLike, onDislike, onClear }: MemeSectionProps) => {
+const MemeSection = ({ item, loading, voteStatuses = {}, onLike, onDislike, onClear }: MemeSectionProps) => {
   return (
     <Card>
       <Stack direction="row" alignItems="center" gap={1} sx={{ px: 2, py: 1.5 }}>
@@ -51,8 +53,8 @@ const MemeSection = ({ item, loading, onLike, onDislike, onClear }: MemeSectionP
                   alt={item.title || "meme"}
                   style={{
                     width: "100%",
-                    height: 180,
-                    objectFit: "cover",
+                    maxHeight: 300,
+                    objectFit: "contain",
                     display: "block",
                   }}
                 />
@@ -70,7 +72,7 @@ const MemeSection = ({ item, loading, onLike, onDislike, onClear }: MemeSectionP
                 ))}
                 {item.source && <Chip size="small" label={item.source} variant="outlined" />}
               </Stack>
-              <VoteButtons item={item} onLike={onLike} onDislike={onDislike} onClear={onClear} />
+              <VoteButtons item={item} status={voteStatuses[item._id]} onLike={onLike} onDislike={onDislike} onClear={onClear} />
             </Stack>
           </Stack>
         )}

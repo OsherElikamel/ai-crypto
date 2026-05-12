@@ -23,6 +23,7 @@ import type {
   VotableItem,
   ContentType,
 } from "../types/index.ts";
+import type { VoteStatus } from "../components/ui/VoteButtons.tsx";
 
 function detectType(obj: VotableItem): ContentType | null {
   if ("url" in obj && typeof obj.url === "string") return "news";
@@ -37,6 +38,8 @@ const Dashboard = () => {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [meme, setMeme] = useState<Meme | null>(null);
+
+  const [voteStatuses, setVoteStatuses] = useState<Record<string, VoteStatus>>({});
 
   const [loading, setLoading] = useState({
     coins: true,
@@ -91,7 +94,9 @@ const Dashboard = () => {
       if (!type) return;
 
       const { data } = await submitVote(type, obj._id, action);
-      const { likes, dislikes } = data;
+      const { likes, dislikes, status } = data;
+
+      setVoteStatuses((prev) => ({ ...prev, [obj._id]: status || "none" }));
 
       const applyCounts = <T extends VotableItem>(
         setter: React.Dispatch<React.SetStateAction<T[]>>
@@ -135,6 +140,7 @@ const Dashboard = () => {
           <CoinsSection
             items={coins}
             loading={loading.coins}
+            voteStatuses={voteStatuses}
             onLike={(c) => handleVote(c, "like")}
             onDislike={(c) => handleVote(c, "dislike")}
             onClear={(c) => handleVote(c, "clear")}
@@ -146,6 +152,7 @@ const Dashboard = () => {
           <NewsSection
             items={news}
             loading={loading.news}
+            voteStatuses={voteStatuses}
             onLike={(n) => handleVote(n, "like")}
             onDislike={(n) => handleVote(n, "dislike")}
             onClear={(n) => handleVote(n, "clear")}
@@ -156,6 +163,7 @@ const Dashboard = () => {
           <InsightsSection
             items={insights}
             loading={loading.insights}
+            voteStatuses={voteStatuses}
             onLike={(i) => handleVote(i, "like")}
             onDislike={(i) => handleVote(i, "dislike")}
             onClear={(i) => handleVote(i, "clear")}
@@ -167,6 +175,7 @@ const Dashboard = () => {
           <MemeSection
             item={meme}
             loading={loading.meme}
+            voteStatuses={voteStatuses}
             onLike={(m) => handleVote(m, "like")}
             onDislike={(m) => handleVote(m, "dislike")}
             onClear={(m) => handleVote(m, "clear")}

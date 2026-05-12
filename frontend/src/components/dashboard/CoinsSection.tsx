@@ -2,7 +2,6 @@ import {
   Alert,
   Box,
   Card,
-  Chip,
   Divider,
   Skeleton,
   Stack,
@@ -10,17 +9,19 @@ import {
 } from "@mui/material";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
 import VoteButtons from "../ui/VoteButtons.tsx";
+import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { Coin } from "../../types/index.ts";
 
 interface CoinsSectionProps {
   items: Coin[];
   loading: boolean;
+  voteStatuses?: Record<string, VoteStatus>;
   onLike: (item: Coin) => void;
   onDislike: (item: Coin) => void;
   onClear: (item: Coin) => void;
 }
 
-const CoinsSection = ({ items, loading, onLike, onDislike, onClear }: CoinsSectionProps) => {
+const CoinsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onClear }: CoinsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card>
@@ -72,7 +73,6 @@ const CoinsSection = ({ items, loading, onLike, onDislike, onClear }: CoinsSecti
                 <th>#</th>
                 <th>Symbol</th>
                 <th>Name</th>
-                <th>ID</th>
                 <th style={{ textAlign: "right" }}>Votes</th>
               </tr>
             </thead>
@@ -88,11 +88,8 @@ const CoinsSection = ({ items, loading, onLike, onDislike, onClear }: CoinsSecti
                   <td>
                     <Typography variant="body2" color="text.secondary">{c.name}</Typography>
                   </td>
-                  <td>
-                    <Chip size="small" label={c.coingeckoId} />
-                  </td>
                   <td style={{ textAlign: "right" }}>
-                    <VoteButtons item={c} onLike={onLike} onDislike={onDislike} onClear={onClear} />
+                    <VoteButtons item={c} status={voteStatuses[c._id]} onLike={onLike} onDislike={onDislike} onClear={onClear} />
                   </td>
                 </tr>
               ))}

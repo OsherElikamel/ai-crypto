@@ -2,12 +2,17 @@ import {
   Alert,
   Box,
   Button,
+  IconButton,
+  InputAdornment,
   Stack,
   Tab,
   Tabs,
   TextField,
   Typography,
 } from "@mui/material";
+import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import { useMemo, useState, type FormEvent } from "react";
 import {
   getPasswordStrength,
@@ -96,42 +101,87 @@ const Auth = () => {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100vh",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <Box sx={{ width: "100%", maxWidth: 420, px: 3 }}>
-        <Box>
-          <Box sx={{ width: "100%" }}>
-            <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-              <Tabs
-                value={mode}
-                onChange={(_, v: AuthMode) => setMode(v)}
-                aria-label="auth tabs"
-              >
-                <Tab
-                  label="Create account"
-                  value="signup"
-                  id="tab-signup"
-                  aria-controls="panel-signup"
-                />
-                <Tab
-                  label="Sign in"
-                  value="signin"
-                  id="tab-signin"
-                  aria-controls="panel-signin"
-                />
-              </Tabs>
-            </Box>
-          </Box>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "20%",
+          left: "30%",
+          width: 300,
+          height: 300,
+          borderRadius: "50%",
+          bgcolor: "primary.main",
+          opacity: 0.06,
+          filter: "blur(80px)",
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "25%",
+          right: "25%",
+          width: 250,
+          height: 250,
+          borderRadius: "50%",
+          bgcolor: "secondary.main",
+          opacity: 0.08,
+          filter: "blur(60px)",
+        }}
+      />
 
-          <Typography variant="h4" fontWeight={700} sx={{ mt: 3 }}>
-            {mode === "signin" ? "Welcome back" : "Join us"}
+      <Box sx={{ width: "100%", maxWidth: 420, px: 3, position: "relative", zIndex: 1 }}>
+        <Stack alignItems="center" sx={{ mb: 3 }}>
+          <Box
+            sx={{
+              width: 52,
+              height: 52,
+              borderRadius: 3,
+              bgcolor: "primary.main",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mb: 1.5,
+            }}
+          >
+            <CurrencyBitcoinIcon sx={{ color: "#fff", fontSize: 28 }} />
+          </Box>
+          <Typography variant="h5" fontWeight={700}>
+            Crypto Dashboard
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {mode === "signin"
-              ? "Enter your email and password to continue"
-              : "Fill in your details to create an account"}
-          </Typography>
+        </Stack>
+
+        <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+          <Tabs
+            value={mode}
+            onChange={(_, v: AuthMode) => setMode(v)}
+            aria-label="auth tabs"
+          >
+            <Tab
+              label="Create account"
+              value="signup"
+              id="tab-signup"
+              aria-controls="panel-signup"
+            />
+            <Tab
+              label="Sign in"
+              value="signin"
+              id="tab-signin"
+              aria-controls="panel-signin"
+            />
+          </Tabs>
         </Box>
+
+        <Typography variant="h4" fontWeight={700} sx={{ mt: 3 }}>
+          {mode === "signin" ? "Welcome back" : "Join us"}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+          {mode === "signin"
+            ? "Enter your email and password to continue"
+            : "Fill in your details to create an account"}
+        </Typography>
 
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -179,25 +229,32 @@ const Auth = () => {
                 mode === "signin" ? "Your password" : "Create a strong password"
               }
               aria-invalid={password.length > 0 && password.length < 8}
+              helperText={password ? passwordStrengthText : undefined}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword((s) => !s)}
+                        edge="end"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        size="small"
+                      >
+                        {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
+              }}
             />
-
-            <Button
-              variant="contained"
-              onClick={() => setShowPassword((s) => !s)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </Button>
-
-            <Typography variant="caption" display="block" gutterBottom>
-              {password && passwordStrengthText}
-            </Typography>
 
             <Button
               variant="contained"
               type="submit"
               disabled={!canSubmit}
               aria-busy={submitting}
+              size="large"
+              fullWidth
             >
               {submitting
                 ? mode === "signin"

@@ -10,23 +10,26 @@ import {
 } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import VoteButtons from "../ui/VoteButtons.tsx";
+import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { Insight } from "../../types/index.ts";
 
 interface InsightsSectionProps {
   items: Insight[];
   loading: boolean;
+  voteStatuses?: Record<string, VoteStatus>;
   onLike: (item: Insight) => void;
   onDislike: (item: Insight) => void;
   onClear: (item: Insight) => void;
 }
 
-const InsightsSection = ({ items, loading, onLike, onDislike, onClear }: InsightsSectionProps) => {
+const InsightsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onClear }: InsightsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       <Stack direction="row" alignItems="center" gap={1} sx={{ px: 2, py: 1.5 }}>
         <AutoAwesomeIcon sx={{ color: "primary.main", fontSize: 20 }} />
         <Typography variant="subtitle2" fontWeight={700}>AI Insights</Typography>
+        <Typography variant="caption" color="text.secondary">{list.length} generated</Typography>
       </Stack>
       <Divider />
 
@@ -66,7 +69,7 @@ const InsightsSection = ({ items, loading, onLike, onDislike, onClear }: Insight
                     <Chip key={tk} size="small" label={tk} />
                   ))}
                   <Box sx={{ flex: 1 }} />
-                  <VoteButtons item={ins} onLike={onLike} onDislike={onDislike} onClear={onClear} />
+                  <VoteButtons item={ins} status={voteStatuses[ins._id]} onLike={onLike} onDislike={onDislike} onClear={onClear} />
                 </Stack>
               </Box>
             ))}
