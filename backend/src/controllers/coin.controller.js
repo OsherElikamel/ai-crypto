@@ -6,7 +6,7 @@ export async function listCoins(req, res) {
   const skip  = (page - 1) * limit;
 
   const [items, total] = await Promise.all([
-    Coin.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Coin.find().sort({ rank: 1, createdAt: -1 }).skip(skip).limit(limit),
     Coin.countDocuments()
   ]);
 

@@ -1,5 +1,4 @@
 import {
-  Alert,
   Box,
   Card,
   Chip,
@@ -42,7 +41,10 @@ const NewsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onC
             ))}
           </Stack>
         ) : list.length === 0 ? (
-          <Alert severity="info" sx={{ m: 2 }}>No news yet.</Alert>
+          <Stack alignItems="center" sx={{ py: 4, px: 2 }}>
+            <NewspaperIcon sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
+            <Typography variant="body2" color="text.secondary">No news stories yet</Typography>
+          </Stack>
         ) : (
           <Stack spacing={0}>
             {list.map((n, i) => (

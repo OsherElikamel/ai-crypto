@@ -14,6 +14,8 @@ import {
   fetchNews,
   fetchMemes,
   submitVote,
+  refreshPrices,
+  refreshMeme,
 } from "../services/dashboard.service.ts";
 import type {
   Coin,
@@ -48,6 +50,8 @@ const Dashboard = () => {
     meme: true,
   });
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refreshingMeme, setRefreshingMeme] = useState(false);
 
   useEffect(() => {
     let ignore = false;
@@ -87,6 +91,31 @@ const Dashboard = () => {
 
     return () => { ignore = true; };
   }, []);
+
+  async function handleRefreshPrices() {
+    setRefreshing(true);
+    try {
+      await refreshPrices();
+      const coinsRes = await fetchCoins(10);
+      setCoins(Array.isArray(coinsRes.data) ? coinsRes.data : (coinsRes.data as { items: Coin[] }).items || []);
+    } catch {
+      setError("Failed to refresh prices");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  async function handleRefreshMeme() {
+    setRefreshingMeme(true);
+    try {
+      const res = await refreshMeme();
+      if (res.data) setMeme(res.data as Meme);
+    } catch {
+      setError("Failed to load new meme");
+    } finally {
+      setRefreshingMeme(false);
+    }
+  }
 
   async function handleVote(obj: VotableItem, action: string) {
     try {
@@ -144,6 +173,8 @@ const Dashboard = () => {
             onLike={(c) => handleVote(c, "like")}
             onDislike={(c) => handleVote(c, "dislike")}
             onClear={(c) => handleVote(c, "clear")}
+            onRefresh={handleRefreshPrices}
+            refreshing={refreshing}
           />
         </Grid>
 
@@ -179,6 +210,8 @@ const Dashboard = () => {
             onLike={(m) => handleVote(m, "like")}
             onDislike={(m) => handleVote(m, "dislike")}
             onClear={(m) => handleVote(m, "clear")}
+            onRefresh={handleRefreshMeme}
+            refreshing={refreshingMeme}
           />
         </Grid>
       </Grid>

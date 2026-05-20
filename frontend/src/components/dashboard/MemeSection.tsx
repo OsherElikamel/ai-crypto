@@ -1,14 +1,16 @@
 import {
-  Alert,
   Box,
   Card,
   Chip,
   Divider,
+  IconButton,
   Skeleton,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import VoteButtons from "../ui/VoteButtons.tsx";
 import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { Meme } from "../../types/index.ts";
@@ -20,14 +22,26 @@ interface MemeSectionProps {
   onLike: (item: Meme) => void;
   onDislike: (item: Meme) => void;
   onClear: (item: Meme) => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-const MemeSection = ({ item, loading, voteStatuses = {}, onLike, onDislike, onClear }: MemeSectionProps) => {
+const MemeSection = ({ item, loading, voteStatuses = {}, onLike, onDislike, onClear, onRefresh, refreshing }: MemeSectionProps) => {
   return (
     <Card>
       <Stack direction="row" alignItems="center" gap={1} sx={{ px: 2, py: 1.5 }}>
         <SentimentVerySatisfiedIcon sx={{ color: "primary.main", fontSize: 20 }} />
         <Typography variant="subtitle2" fontWeight={700}>Meme of the Day</Typography>
+        <Box sx={{ flex: 1 }} />
+        {onRefresh && (
+          <Tooltip title="Load new meme">
+            <span>
+              <IconButton size="small" onClick={onRefresh} disabled={refreshing}>
+                <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none", "@keyframes spin": { "100%": { transform: "rotate(360deg)" } } }} />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
       </Stack>
       <Divider />
 
@@ -35,7 +49,10 @@ const MemeSection = ({ item, loading, voteStatuses = {}, onLike, onDislike, onCl
         {loading ? (
           <Skeleton variant="rectangular" height={160} sx={{ borderRadius: 1 }} />
         ) : !item ? (
-          <Alert severity="info">No meme available</Alert>
+          <Stack alignItems="center" sx={{ py: 4 }}>
+            <SentimentVerySatisfiedIcon sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
+            <Typography variant="body2" color="text.secondary">No meme available right now</Typography>
+          </Stack>
         ) : (
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2.5} alignItems={{ sm: "center" }}>
             {item.imageUrl && (

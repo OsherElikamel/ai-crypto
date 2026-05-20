@@ -22,6 +22,12 @@ export interface Coin {
   symbol: string;
   name: string;
   coingeckoId: string;
+  price?: number | null;
+  change24h?: number | null;
+  marketCap?: number | null;
+  volume24h?: number | null;
+  rank?: number | null;
+  priceUpdatedAt?: string | null;
   likedBy: string[];
   dislikedBy: string[];
   likeCount?: number;

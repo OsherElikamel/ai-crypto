@@ -1,5 +1,4 @@
 import {
-  Alert,
   Box,
   Card,
   Chip,
@@ -41,7 +40,10 @@ const InsightsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike,
             ))}
           </Stack>
         ) : list.length === 0 ? (
-          <Alert severity="info">No insights yet.</Alert>
+          <Stack alignItems="center" sx={{ py: 4 }}>
+            <AutoAwesomeIcon sx={{ fontSize: 40, color: "text.disabled", mb: 1 }} />
+            <Typography variant="body2" color="text.secondary">No insights generated yet</Typography>
+          </Stack>
         ) : (
           <Stack spacing={1.5}>
             {list.map((ins) => (

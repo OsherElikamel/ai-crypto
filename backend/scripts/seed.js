@@ -111,7 +111,7 @@ await Coin.insertMany([
   { symbol: "AVAX", name: "Avalanche", coingeckoId: "avalanche-2" },
   { symbol: "DOT", name: "Polkadot", coingeckoId: "polkadot" },
   { symbol: "LINK", name: "Chainlink", coingeckoId: "chainlink" },
-  { symbol: "MATIC", name: "Polygon", coingeckoId: "matic-network" },
+  { symbol: "POL", name: "Polygon", coingeckoId: "polygon-ecosystem-token" },
 ]);
 
 const demoEmail = "demo@example.com";

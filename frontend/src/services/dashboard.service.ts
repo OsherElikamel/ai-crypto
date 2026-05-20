@@ -22,3 +22,9 @@ export const fetchMemes = (limit = 1) =>
 
 export const submitVote = (type: ContentType, id: string, action: string) =>
   api.post<{ ok: boolean; likes: number; dislikes: number }>(`/vote/${type}/${id}`, { vote: action });
+
+export const refreshPrices = () =>
+  api.post<{ ok: boolean; updated: number }>("/api/prices/refresh");
+
+export const refreshMeme = () =>
+  api.post("/api/meme/refresh");
