@@ -1,7 +1,7 @@
 import { fetchFirstHotPost } from "../services/cryptopanic.service.js";
 import { fetchSimplePrice, refreshAllPrices } from "../services/coingecko.service.js";
 import { generateInsight } from "../services/openrouter.service.js";
-import { fetchOneMeme } from "../services/reddit.service.js";
+import { fetchOneMeme, fetchManyMemes } from "../services/reddit.service.js";
 import Meme from "../models/Meme.js";
 
 export async function getOneNews(_req, res) {
@@ -51,14 +51,24 @@ export async function refreshMeme(_req, res) {
 }
 
 export async function fetchAndStoreMeme() {
-  const item = await fetchOneMeme();
-  if (!item || !item.imageUrl) return null;
+  const items = await fetchManyMemes();
+  if (!items.length) return null;
+
+  const existingTitles = new Set(
+    (await Meme.find({ source: "reddit" }, "title").lean()).map((m) => m.title)
+  );
+
+  const fresh = items.filter((m) => m.imageUrl && !existingTitles.has(m.title));
+  const pick = fresh.length > 0
+    ? fresh[Math.floor(Math.random() * fresh.length)]
+    : items[Math.floor(Math.random() * items.length)];
+
   const doc = await Meme.findOneAndUpdate(
-    { source: "reddit", title: item.title },
+    { source: "reddit", title: pick.title },
     {
       $setOnInsert: {
-        imageUrl: item.imageUrl,
-        title: item.title,
+        imageUrl: pick.imageUrl,
+        title: pick.title,
         tags: ["crypto", "meme"],
         source: "reddit",
       },

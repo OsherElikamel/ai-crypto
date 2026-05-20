@@ -5,9 +5,15 @@ export async function listCoins(req, res) {
   const page  = Math.max(1, Number(req.query.page) || 1);
   const skip  = (page - 1) * limit;
 
+  const filter = {};
+  const symbols = req.query.symbols;
+  if (symbols) {
+    filter.symbol = { $in: symbols.split(",").map((s) => s.trim().toUpperCase()) };
+  }
+
   const [items, total] = await Promise.all([
-    Coin.find().sort({ rank: 1, createdAt: -1 }).skip(skip).limit(limit),
-    Coin.countDocuments()
+    Coin.find(filter).sort({ rank: 1, createdAt: -1 }).skip(skip).limit(limit),
+    Coin.countDocuments(filter)
   ]);
 
   res.json({ page, limit, total, items });

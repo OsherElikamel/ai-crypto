@@ -3,7 +3,8 @@ import {
   Box,
   Grid,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+import { useAuth } from "../contexts/AuthContext.tsx";
 import CoinsSection from "../components/dashboard/CoinsSection.tsx";
 import InsightsSection from "../components/dashboard/InsightsSection.tsx";
 import MemeSection from "../components/dashboard/MemeSection.tsx";
@@ -36,6 +37,14 @@ function detectType(obj: VotableItem): ContentType | null {
 }
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const prefs = user?.preferences;
+  const coinSymbols = useMemo(() => prefs?.coins?.length ? prefs.coins : undefined, [prefs]);
+  const contentTypes = useMemo(() => new Set(prefs?.contentTypes ?? []), [prefs]);
+  const showNews = !prefs || contentTypes.size === 0 || contentTypes.has("News");
+  const showInsights = !prefs || contentTypes.size === 0 || contentTypes.has("Insights");
+  const showMemes = !prefs || contentTypes.size === 0 || contentTypes.has("Memes");
+
   const [coins, setCoins] = useState<Coin[]>([]);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
@@ -67,10 +76,10 @@ const Dashboard = () => {
       setError(null);
       try {
         const [coinsRes, insightsRes, newsRes, memeRes] = await Promise.all([
-          fetchCoins(10),
-          fetchInsights(3),
-          fetchNews(8),
-          fetchMemes(1),
+          fetchCoins(10, coinSymbols),
+          showInsights ? fetchInsights(3) : Promise.resolve({ data: { items: [] } }),
+          showNews ? fetchNews(8) : Promise.resolve({ data: { items: [] } }),
+          showMemes ? fetchMemes(1) : Promise.resolve({ data: { items: [] } }),
         ]);
         if (ignore) return;
         setCoins(asArray<Coin>(coinsRes.data));
@@ -90,13 +99,13 @@ const Dashboard = () => {
     })();
 
     return () => { ignore = true; };
-  }, []);
+  }, [coinSymbols, showNews, showInsights, showMemes]);
 
   async function handleRefreshPrices() {
     setRefreshing(true);
     try {
       await refreshPrices();
-      const coinsRes = await fetchCoins(10);
+      const coinsRes = await fetchCoins(10, coinSymbols);
       setCoins(Array.isArray(coinsRes.data) ? coinsRes.data : (coinsRes.data as { items: Coin[] }).items || []);
     } catch {
       setError("Failed to refresh prices");
@@ -179,41 +188,47 @@ const Dashboard = () => {
         </Grid>
 
         {/* Row 2: News + Insights */}
-        <Grid size={{ xs: 12, lg: 7 }}>
-          <NewsSection
-            items={news}
-            loading={loading.news}
-            voteStatuses={voteStatuses}
-            onLike={(n) => handleVote(n, "like")}
-            onDislike={(n) => handleVote(n, "dislike")}
-            onClear={(n) => handleVote(n, "clear")}
-          />
-        </Grid>
+        {showNews && (
+          <Grid size={{ xs: 12, lg: showInsights ? 7 : 12 }}>
+            <NewsSection
+              items={news}
+              loading={loading.news}
+              voteStatuses={voteStatuses}
+              onLike={(n) => handleVote(n, "like")}
+              onDislike={(n) => handleVote(n, "dislike")}
+              onClear={(n) => handleVote(n, "clear")}
+            />
+          </Grid>
+        )}
 
-        <Grid size={{ xs: 12, lg: 5 }}>
-          <InsightsSection
-            items={insights}
-            loading={loading.insights}
-            voteStatuses={voteStatuses}
-            onLike={(i) => handleVote(i, "like")}
-            onDislike={(i) => handleVote(i, "dislike")}
-            onClear={(i) => handleVote(i, "clear")}
-          />
-        </Grid>
+        {showInsights && (
+          <Grid size={{ xs: 12, lg: showNews ? 5 : 12 }}>
+            <InsightsSection
+              items={insights}
+              loading={loading.insights}
+              voteStatuses={voteStatuses}
+              onLike={(i) => handleVote(i, "like")}
+              onDislike={(i) => handleVote(i, "dislike")}
+              onClear={(i) => handleVote(i, "clear")}
+            />
+          </Grid>
+        )}
 
         {/* Row 3: Meme */}
-        <Grid size={12}>
-          <MemeSection
-            item={meme}
-            loading={loading.meme}
-            voteStatuses={voteStatuses}
-            onLike={(m) => handleVote(m, "like")}
-            onDislike={(m) => handleVote(m, "dislike")}
-            onClear={(m) => handleVote(m, "clear")}
-            onRefresh={handleRefreshMeme}
-            refreshing={refreshingMeme}
-          />
-        </Grid>
+        {showMemes && (
+          <Grid size={12}>
+            <MemeSection
+              item={meme}
+              loading={loading.meme}
+              voteStatuses={voteStatuses}
+              onLike={(m) => handleVote(m, "like")}
+              onDislike={(m) => handleVote(m, "dislike")}
+              onClear={(m) => handleVote(m, "clear")}
+              onRefresh={handleRefreshMeme}
+              refreshing={refreshingMeme}
+            />
+          </Grid>
+        )}
       </Grid>
     </Box>
   );

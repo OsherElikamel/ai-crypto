@@ -8,8 +8,11 @@ interface PaginatedResponse<T> {
   items: T[];
 }
 
-export const fetchCoins = (limit = 10) =>
-  api.get<PaginatedResponse<Coin>>("/coins", { params: { limit } });
+export const fetchCoins = (limit = 10, symbols?: string[]) => {
+  const params: Record<string, unknown> = { limit };
+  if (symbols?.length) params.symbols = symbols.join(",");
+  return api.get<PaginatedResponse<Coin>>("/coins", { params });
+};
 
 export const fetchInsights = (limit = 3) =>
   api.get<PaginatedResponse<Insight>>("/insights", { params: { limit } });

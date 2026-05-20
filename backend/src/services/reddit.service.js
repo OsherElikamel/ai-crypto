@@ -11,33 +11,43 @@ export async function fetchOneMeme() {
   return fetchPublic();
 }
 
-async function fetchPublic() {
-  const { data } = await axios.get(SUBREDDIT_URL, {
-    params: { limit: 10, t: "day" },
-    headers: { "User-Agent": USER_AGENT },
-    timeout: 8000,
-  });
+export async function fetchManyMemes() {
+  const posts = await fetchPublicPosts();
+  return posts.map(extractMeme).filter(Boolean);
+}
 
-  const posts = data?.data?.children || [];
-  const imagePost = posts.find((p) => {
-    const d = p.data;
-    return d && !d.stickied && (d.post_hint === "image" || d.url?.match(/\.(jpg|jpeg|png|gif|webp)/i));
-  });
-
-  const post = imagePost?.data || posts.find((p) => !p.data?.stickied)?.data;
+function extractMeme(post) {
   if (!post) return null;
-
   const imageUrl =
     post?.preview?.images?.[0]?.source?.url?.replace(/&amp;/g, "&") ||
     post?.url_overridden_by_dest ||
     post?.url;
-
   return {
     id: post.id,
     title: post.title,
     permalink: `https://www.reddit.com${post.permalink}`,
     imageUrl,
   };
+}
+
+async function fetchPublicPosts() {
+  const { data } = await axios.get(SUBREDDIT_URL, {
+    params: { limit: 25, t: "week" },
+    headers: { "User-Agent": USER_AGENT },
+    timeout: 8000,
+  });
+
+  const posts = data?.data?.children || [];
+  return posts
+    .map((p) => p.data)
+    .filter((d) => d && !d.stickied && (d.post_hint === "image" || d.url?.match(/\.(jpg|jpeg|png|gif|webp)/i)));
+}
+
+async function fetchPublic() {
+  const imagePosts = await fetchPublicPosts();
+  const post = imagePosts[0];
+  if (!post) return null;
+  return extractMeme(post);
 }
 
 async function fetchWithOAuth() {
@@ -67,16 +77,5 @@ async function fetchWithOAuth() {
 
   const post = data?.data?.children?.[0]?.data;
   if (!post) return null;
-
-  const imageUrl =
-    post?.preview?.images?.[0]?.source?.url?.replace(/&amp;/g, "&") ||
-    post?.url_overridden_by_dest ||
-    post?.url;
-
-  return {
-    id: post.id,
-    title: post.title,
-    permalink: `${config.reddit.baseUrl || "https://www.reddit.com"}${post.permalink}`,
-    imageUrl,
-  };
+  return extractMeme(post);
 }
