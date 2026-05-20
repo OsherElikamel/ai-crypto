@@ -9,3 +9,6 @@ export const registerUser = (body: { name: string; email: string; password: stri
 
 export const getMe = () =>
   api.get<{ user: User }>("/auth/me");
+
+export const updatePreferences = (prefs: Record<string, unknown>) =>
+  api.patch<{ ok: boolean; preferences: User["preferences"] }>("/auth/preferences", prefs);

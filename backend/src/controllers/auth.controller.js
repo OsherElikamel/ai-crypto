@@ -54,3 +54,18 @@ export async function me(req, res) {
     }
   });
 }
+
+export async function updatePreferences(req, res) {
+  const updates = req.body || {};
+  const allowed = ["coins", "contentTypes", "investorType", "risk", "fiat", "depth", "alerts"];
+
+  const $set = {};
+  for (const key of allowed) {
+    if (key in updates) $set[`preferences.${key}`] = updates[key];
+  }
+
+  if (!Object.keys($set).length) return res.status(400).json({ error: "nothing to update" });
+
+  const user = await User.findByIdAndUpdate(req.user._id, { $set }, { new: true }).lean();
+  res.json({ ok: true, preferences: user.preferences });
+}

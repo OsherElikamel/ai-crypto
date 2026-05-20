@@ -14,6 +14,9 @@ export const fetchCoins = (limit = 10, symbols?: string[]) => {
   return api.get<PaginatedResponse<Coin>>("/coins", { params });
 };
 
+export const fetchAllCoins = () =>
+  api.get<PaginatedResponse<Coin>>("/coins", { params: { limit: 100 } });
+
 export const fetchInsights = (limit = 3) =>
   api.get<PaginatedResponse<Insight>>("/insights", { params: { limit } });
 

@@ -9,6 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import MonetizationOnIcon from "@mui/icons-material/MonetizationOn";
+import AddIcon from "@mui/icons-material/Add";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
@@ -25,6 +26,7 @@ interface CoinsSectionProps {
   onClear: (item: Coin) => void;
   onRefresh?: () => void;
   refreshing?: boolean;
+  onAddCoin?: () => void;
 }
 
 function formatPrice(val: number | null | undefined): string {
@@ -49,7 +51,7 @@ function formatChange(val: number | null | undefined) {
   };
 }
 
-const CoinsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onClear, onRefresh, refreshing }: CoinsSectionProps) => {
+const CoinsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onClear, onRefresh, refreshing, onAddCoin }: CoinsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card>
@@ -58,6 +60,13 @@ const CoinsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, on
         <Typography variant="subtitle2" fontWeight={700}>Coin Prices</Typography>
         <Typography variant="caption" color="text.secondary">{list.length} tracked</Typography>
         <Box sx={{ flex: 1 }} />
+        {onAddCoin && (
+          <Tooltip title="Add / remove coins">
+            <IconButton size="small" onClick={onAddCoin}>
+              <AddIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
         {onRefresh && (
           <Tooltip title="Refresh prices">
             <span>

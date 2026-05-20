@@ -2,15 +2,23 @@ import {
   Alert,
   Box,
   Grid,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
 } from "@mui/material";
-import { useEffect, useState, useMemo } from "react";
+import SettingsIcon from "@mui/icons-material/Settings";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext.tsx";
 import CoinsSection from "../components/dashboard/CoinsSection.tsx";
 import InsightsSection from "../components/dashboard/InsightsSection.tsx";
 import MemeSection from "../components/dashboard/MemeSection.tsx";
 import NewsSection from "../components/dashboard/NewsSection.tsx";
+import AddCoinDialog from "../components/dashboard/AddCoinDialog.tsx";
+import SectionSettingsDialog from "../components/dashboard/SectionSettingsDialog.tsx";
 import {
   fetchCoins,
+  fetchAllCoins,
   fetchInsights,
   fetchNews,
   fetchMemes,
@@ -18,6 +26,7 @@ import {
   refreshPrices,
   refreshMeme,
 } from "../services/dashboard.service.ts";
+import { updatePreferences } from "../services/auth.service.ts";
 import type {
   Coin,
   Insight,
@@ -36,16 +45,26 @@ function detectType(obj: VotableItem): ContentType | null {
   return null;
 }
 
+const asArray = <T,>(data: unknown): T[] => {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object" && "items" in data && Array.isArray((data as { items: T[] }).items))
+    return (data as { items: T[] }).items;
+  return [];
+};
+
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const prefs = user?.preferences;
   const coinSymbols = useMemo(() => prefs?.coins?.length ? prefs.coins : undefined, [prefs]);
-  const contentTypes = useMemo(() => new Set(prefs?.contentTypes ?? []), [prefs]);
-  const showNews = !prefs || contentTypes.size === 0 || contentTypes.has("News");
-  const showInsights = !prefs || contentTypes.size === 0 || contentTypes.has("Insights");
-  const showMemes = !prefs || contentTypes.size === 0 || contentTypes.has("Memes");
+  const contentTypes = useMemo(() => prefs?.contentTypes ?? [], [prefs]);
+  const contentSet = useMemo(() => new Set(contentTypes), [contentTypes]);
+  const showPrices = !prefs || contentSet.size === 0 || contentSet.has("Prices");
+  const showNews = !prefs || contentSet.size === 0 || contentSet.has("News");
+  const showInsights = !prefs || contentSet.size === 0 || contentSet.has("Insights");
+  const showMemes = !prefs || contentSet.size === 0 || contentSet.has("Memes");
 
   const [coins, setCoins] = useState<Coin[]>([]);
+  const [allCoins, setAllCoins] = useState<{ symbol: string; name: string }[]>([]);
   const [insights, setInsights] = useState<Insight[]>([]);
   const [news, setNews] = useState<NewsItem[]>([]);
   const [meme, setMeme] = useState<Meme | null>(null);
@@ -61,22 +80,23 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingMeme, setRefreshingMeme] = useState(false);
+  const [coinDialogOpen, setCoinDialogOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  useEffect(() => {
+    fetchAllCoins().then((res) => {
+      setAllCoins(asArray<Coin>(res.data).map((c) => ({ symbol: c.symbol, name: c.name })));
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     let ignore = false;
-
-    const asArray = <T,>(data: unknown): T[] => {
-      if (Array.isArray(data)) return data;
-      if (data && typeof data === "object" && "items" in data && Array.isArray((data as { items: T[] }).items))
-        return (data as { items: T[] }).items;
-      return [];
-    };
 
     (async () => {
       setError(null);
       try {
         const [coinsRes, insightsRes, newsRes, memeRes] = await Promise.all([
-          fetchCoins(10, coinSymbols),
+          showPrices ? fetchCoins(10, coinSymbols) : Promise.resolve({ data: { items: [] } }),
           showInsights ? fetchInsights(3) : Promise.resolve({ data: { items: [] } }),
           showNews ? fetchNews(8) : Promise.resolve({ data: { items: [] } }),
           showMemes ? fetchMemes(1) : Promise.resolve({ data: { items: [] } }),
@@ -99,14 +119,14 @@ const Dashboard = () => {
     })();
 
     return () => { ignore = true; };
-  }, [coinSymbols, showNews, showInsights, showMemes]);
+  }, [coinSymbols, showPrices, showNews, showInsights, showMemes]);
 
   async function handleRefreshPrices() {
     setRefreshing(true);
     try {
       await refreshPrices();
       const coinsRes = await fetchCoins(10, coinSymbols);
-      setCoins(Array.isArray(coinsRes.data) ? coinsRes.data : (coinsRes.data as { items: Coin[] }).items || []);
+      setCoins(asArray<Coin>(coinsRes.data));
     } catch {
       setError("Failed to refresh prices");
     } finally {
@@ -125,6 +145,32 @@ const Dashboard = () => {
       setRefreshingMeme(false);
     }
   }
+
+  const handleToggleCoin = useCallback(async (symbol: string) => {
+    const current = prefs?.coins ?? [];
+    const updated = current.includes(symbol)
+      ? current.filter((s) => s !== symbol)
+      : [...current, symbol];
+    try {
+      await updatePreferences({ coins: updated });
+      await refreshUser();
+    } catch {
+      setError("Failed to update coin preferences");
+    }
+  }, [prefs, refreshUser]);
+
+  const handleToggleSection = useCallback(async (type: string) => {
+    const current = contentTypes.length > 0 ? [...contentTypes] : ["Prices", "News", "Insights", "Memes"];
+    const updated = current.includes(type)
+      ? current.filter((t) => t !== type)
+      : [...current, type];
+    try {
+      await updatePreferences({ contentTypes: updated });
+      await refreshUser();
+    } catch {
+      setError("Failed to update section preferences");
+    }
+  }, [contentTypes, refreshUser]);
 
   async function handleVote(obj: VotableItem, action: string) {
     try {
@@ -166,6 +212,14 @@ const Dashboard = () => {
 
   return (
     <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, md: 4 }, py: 3 }}>
+      <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ mb: 1 }}>
+        <Tooltip title="Dashboard settings">
+          <IconButton onClick={() => setSettingsOpen(true)} size="small">
+            <SettingsIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Stack>
+
       {error && (
         <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
           {error}
@@ -173,21 +227,22 @@ const Dashboard = () => {
       )}
 
       <Grid container spacing={2.5}>
-        {/* Row 1: Coins full width */}
-        <Grid size={12}>
-          <CoinsSection
-            items={coins}
-            loading={loading.coins}
-            voteStatuses={voteStatuses}
-            onLike={(c) => handleVote(c, "like")}
-            onDislike={(c) => handleVote(c, "dislike")}
-            onClear={(c) => handleVote(c, "clear")}
-            onRefresh={handleRefreshPrices}
-            refreshing={refreshing}
-          />
-        </Grid>
+        {showPrices && (
+          <Grid size={12}>
+            <CoinsSection
+              items={coins}
+              loading={loading.coins}
+              voteStatuses={voteStatuses}
+              onLike={(c) => handleVote(c, "like")}
+              onDislike={(c) => handleVote(c, "dislike")}
+              onClear={(c) => handleVote(c, "clear")}
+              onRefresh={handleRefreshPrices}
+              refreshing={refreshing}
+              onAddCoin={() => setCoinDialogOpen(true)}
+            />
+          </Grid>
+        )}
 
-        {/* Row 2: News + Insights */}
         {showNews && (
           <Grid size={{ xs: 12, lg: showInsights ? 7 : 12 }}>
             <NewsSection
@@ -214,7 +269,6 @@ const Dashboard = () => {
           </Grid>
         )}
 
-        {/* Row 3: Meme */}
         {showMemes && (
           <Grid size={12}>
             <MemeSection
@@ -230,6 +284,21 @@ const Dashboard = () => {
           </Grid>
         )}
       </Grid>
+
+      <AddCoinDialog
+        open={coinDialogOpen}
+        onClose={() => setCoinDialogOpen(false)}
+        allCoins={allCoins}
+        selectedSymbols={prefs?.coins ?? []}
+        onToggle={handleToggleCoin}
+      />
+
+      <SectionSettingsDialog
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        activeTypes={contentTypes.length > 0 ? contentTypes : ["Prices", "News", "Insights", "Memes"]}
+        onToggle={handleToggleSection}
+      />
     </Box>
   );
 };
