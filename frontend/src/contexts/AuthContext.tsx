@@ -3,6 +3,7 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
   type ReactNode,
 } from "react";
 import { getMe } from "../services/auth.service.ts";
@@ -14,6 +15,7 @@ interface AuthContextValue {
   isLoading: boolean;
   login: (token: string, needsOnboarding: boolean) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -50,6 +52,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => { cancelled = true; };
   }, [token]);
 
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await getMe();
+      setUser(res.data.user);
+    } catch { /* ignore */ }
+  }, []);
+
   const login = (newToken: string, _needsOnboarding: boolean) => {
     localStorage.setItem("auth_token", newToken);
     setToken(newToken);
@@ -62,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext value={{ user, token, isLoading, login, logout }}>
+    <AuthContext value={{ user, token, isLoading, login, logout, refreshUser }}>
       {children}
     </AuthContext>
   );

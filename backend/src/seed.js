@@ -5,6 +5,8 @@ import Meme from "./models/Meme.js";
 import Question from "./models/Questions.js";
 
 export async function seedIfEmpty() {
+  await seedQuestions();
+
   const coinCount = await Coin.countDocuments();
   if (coinCount > 0) return;
 
@@ -58,18 +60,21 @@ export async function seedIfEmpty() {
     { imageUrl: "https://picsum.photos/seed/crypto2/600/400", title: "Holding ETH since 2017", tags: ["eth", "hodl"], source: "r/CryptoCurrencyMemes" },
   ]);
 
-  const questionCount = await Question.countDocuments();
-  if (questionCount === 0) {
-    await Question.insertMany([
-      { id: "coins", type: "multi", question: "Which coins do you follow?", options: ["BTC", "ETH", "SOL", "ADA", "AVAX", "DOT", "LINK", "MATIC", "None"], order: 1, active: true },
-      { id: "investorType", type: "single", question: "What best describes your style?", options: ["HODL", "DABBLER", "TRADER", "NFT_DEFI"], order: 2, active: true },
-      { id: "risk", type: "single", question: "Risk tolerance?", options: ["LOW", "MEDIUM", "HIGH"], order: 3, active: true },
-      { id: "contentTypes", type: "multi", question: "What content interests you?", options: ["News", "Prices", "Insights", "Memes", "None"], order: 4, active: true },
-      { id: "fiat", type: "multi", question: "Preferred fiat currencies?", options: ["USD", "EUR", "GBP", "ILS", "None"], order: 5, active: true },
-      { id: "depth", type: "single", question: "How detailed should insights be?", options: ["SHORT", "MEDIUM", "DEEP"], order: 6, active: true },
-      { id: "alerts", type: "boolean", question: "Enable price alerts?", options: [], order: 7, active: true },
-    ]);
-  }
-
   console.log("Seed complete");
+}
+
+async function seedQuestions() {
+  const count = await Question.countDocuments();
+  if (count > 0) return;
+
+  await Question.insertMany([
+    { id: "coins", type: "multi", question: "Which coins do you follow?", options: ["BTC", "ETH", "SOL", "ADA", "AVAX", "DOT", "LINK", "POL", "None"], order: 1, active: true },
+    { id: "investorType", type: "single", question: "What best describes your style?", options: ["HODL", "DABBLER", "TRADER", "NFT_DEFI"], order: 2, active: true },
+    { id: "risk", type: "single", question: "Risk tolerance?", options: ["LOW", "MEDIUM", "HIGH"], order: 3, active: true },
+    { id: "contentTypes", type: "multi", question: "What content interests you?", options: ["News", "Prices", "Insights", "Memes", "None"], order: 4, active: true },
+    { id: "fiat", type: "multi", question: "Preferred fiat currencies?", options: ["USD", "EUR", "GBP", "ILS", "None"], order: 5, active: true },
+    { id: "depth", type: "single", question: "How detailed should insights be?", options: ["SHORT", "MEDIUM", "DEEP"], order: 6, active: true },
+    { id: "alerts", type: "boolean", question: "Enable price alerts?", options: [], order: 7, active: true },
+  ]);
+  console.log("Quiz questions seeded");
 }

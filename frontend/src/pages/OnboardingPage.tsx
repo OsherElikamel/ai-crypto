@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext.tsx";
 import { getQuestions, submitAnswers } from "../services/quiz.service.ts";
 import type { Question } from "../types/index.ts";
 
@@ -42,6 +43,7 @@ const Onboarding = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   useEffect(() => {
     let alive = true;
@@ -144,6 +146,7 @@ const Onboarding = () => {
 
       if (res.data?.ok) {
         setSubmitted(true);
+        await refreshUser();
         navigate("/dashboard", { replace: true });
       } else {
         throw new Error("Unexpected response saving preferences");

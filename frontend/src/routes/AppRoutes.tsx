@@ -29,10 +29,24 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
-function GuestRoute({ children }: { children: ReactNode }) {
-  const { token, isLoading } = useAuth();
+function OnboardedRoute({ children }: { children: ReactNode }) {
+  const { user, isLoading } = useAuth();
   if (isLoading) return <LoadingScreen />;
-  if (token) return <Navigate to="/dashboard" replace />;
+  if (user && !user.onboarded) return <Navigate to="/onboarding" replace />;
+  return <>{children}</>;
+}
+
+function NotOnboardedRoute({ children }: { children: ReactNode }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <LoadingScreen />;
+  if (user && user.onboarded) return <Navigate to="/dashboard" replace />;
+  return <>{children}</>;
+}
+
+function GuestRoute({ children }: { children: ReactNode }) {
+  const { token, user, isLoading } = useAuth();
+  if (isLoading) return <LoadingScreen />;
+  if (token) return <Navigate to={user && !user.onboarded ? "/onboarding" : "/dashboard"} replace />;
   return <>{children}</>;
 }
 
@@ -55,8 +69,8 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/onboarding" element={<NotOnboardedRoute><Onboarding /></NotOnboardedRoute>} />
+        <Route path="/dashboard" element={<OnboardedRoute><Dashboard /></OnboardedRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/auth" replace />} />
     </Routes>
