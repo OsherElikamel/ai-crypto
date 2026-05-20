@@ -2,7 +2,7 @@ import axios from "axios";
 import config from "../config.js";
 
 export async function fetchFirstHotPost() {
-  const { data } = await axios.get(config.cryptopanic.url, {
+  const { data } = await axios.get("https://cryptopanic.com/api/v1/posts/", {
     params: {
       auth_token: config.cryptopanic.token,
       filter: "hot",

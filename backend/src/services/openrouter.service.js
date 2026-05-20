@@ -5,7 +5,7 @@ export async function generateInsight(investorType, coins) {
   const prompt = `Give a 1-2 sentence crypto tip for a ${investorType} who follows ${coins.join(", ")}.`;
 
   const { data } = await axios.post(
-    config.openrouter.url,
+    "https://openrouter.ai/api/v1/chat/completions",
     {
       model: "openai/gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],

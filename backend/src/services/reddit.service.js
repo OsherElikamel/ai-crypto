@@ -52,7 +52,7 @@ async function fetchPublic() {
 
 async function fetchWithOAuth() {
   const tokenRes = await axios.post(
-    config.reddit.accessTokenUrl,
+    "https://www.reddit.com/api/v1/access_token",
     new URLSearchParams({ grant_type: "client_credentials" }),
     {
       auth: {
@@ -65,7 +65,7 @@ async function fetchWithOAuth() {
   );
   const token = tokenRes.data.access_token;
 
-  const memesUrl = config.reddit.memesUrl || "https://oauth.reddit.com/r/CryptoCurrencyMemes/hot";
+  const memesUrl = "https://oauth.reddit.com/r/CryptoCurrencyMemes/hot";
   const { data } = await axios.get(memesUrl, {
     params: { t: "day", limit: 1 },
     headers: {

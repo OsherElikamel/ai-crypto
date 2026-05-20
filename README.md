@@ -1,43 +1,39 @@
 # AI Crypto Dashboard
 
-A full-stack crypto advisor dashboard that aggregates market news, coin prices, AI-generated insights, and community memes. Features quiz-based onboarding to personalize content and a voting system across all content types. Built with React 19, Express 5, MongoDB, and Docker.
+A full-stack crypto advisor dashboard that aggregates live coin prices, market news, AI-generated insights, and community memes. Features quiz-based onboarding that personalizes your feed, a voting system across all content types, and per-user dashboard customization. Built with React 19, Express 5, MongoDB, and Docker.
 
 ## Features
 
-- **User Authentication** — JWT-based registration and login
-- **Quiz Onboarding** — Personalize your feed by answering questions about investor type, preferred coins, risk level, and content preferences
-- **Market News** — Hot crypto news from CryptoPanic
-- **Coin Prices** — Live prices from CoinGecko
-- **AI Insights** — AI-generated tips via OpenRouter (GPT-4o-mini)
-- **Crypto Memes** — Community memes from Reddit
-- **Voting System** — Like/dislike content across all sections
-- **Responsive Design** — Works on desktop and mobile
+- **Quiz Onboarding** — New users answer questions about investor type, preferred coins, risk level, and content preferences. The dashboard adapts to their answers.
+- **Live Coin Prices** — Real-time prices, 24h change, market cap, volume, and rank from CoinGecko
+- **Personalized Dashboard** — Users control which coins and sections appear. Add/remove coins with a "+" button; toggle entire sections (Prices, News, Insights, Memes) via the settings gear
+- **Market News** — Crypto news from CryptoPanic (requires API key)
+- **AI Insights** — AI-generated market tips via OpenRouter (requires API key)
+- **Crypto Memes** — Community memes from Reddit (no API key required)
+- **Voting System** — Like/dislike content across all sections. Click again to undo
+- **Dark / Light Mode** — Theme toggle with localStorage persistence
+- **Auto-Seed** — Database auto-populates with coins, news, insights, memes, and quiz questions on first startup. No manual seeding needed
+- **JWT Authentication** — Registration, login, and protected routes
 
 ## Tech Stack
 
-### Frontend
-- React 19 with TypeScript
-- Vite 7 (dev server + build)
-- Material UI (MUI) 7
-- Axios (HTTP client)
-- React Router DOM 7
-
-### Backend
-- Express 5 (Node.js)
-- MongoDB with Mongoose 8
-- JWT authentication (jsonwebtoken + bcrypt)
-- External API integrations (CoinGecko, CryptoPanic, OpenRouter, Reddit)
-
-### Infrastructure
-- Docker & Docker Compose
-- MongoDB 7
-- Mongo Express (DB admin UI)
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Frontend | React 19 + TypeScript | UI with strict typing |
+| Build | Vite 7 | Dev server + production builds |
+| UI Library | Material UI (MUI) 7 | Component library with custom theme |
+| HTTP Client | Axios | Interceptors, centralized error handling |
+| Routing | React Router DOM 7 | Route guards for auth and onboarding |
+| Backend | Express 5 (Node.js) | REST API server |
+| Database | MongoDB 7 + Mongoose 8 | Document storage with ODM |
+| Auth | JWT + bcrypt | Token-based authentication |
+| Infrastructure | Docker + Docker Compose | One-command local setup |
+| External APIs | CoinGecko, CryptoPanic, OpenRouter, Reddit | Market data, news, AI insights, memes |
 
 ## Quick Start
 
 ### Prerequisites
 - Docker and Docker Compose installed
-- API keys for external services (see Environment Variables below)
 
 ### 1. Clone the repository
 ```bash
@@ -50,93 +46,97 @@ cd ai-crypto-dashboard
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env
 ```
-Edit `backend/.env` and fill in your API keys.
+
+The app works out of the box with coin prices and memes (CoinGecko and Reddit public APIs). For news and AI insights, add your API keys to `backend/.env` — see [Environment Variables](#environment-variables).
 
 ### 3. Start with Docker Compose
 ```bash
 docker compose up --build
 ```
 
-### 4. Seed the database
-```bash
-docker compose exec backend npm run seed
-```
+The backend auto-seeds the database on first startup with coins, quiz questions, sample news, insights, and memes. Live prices are fetched from CoinGecko and a fresh meme is loaded from Reddit automatically.
 
-### 5. Open the app
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8080
-- **Mongo Express**: http://localhost:8081
+### 4. Open the app
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:8080 |
+| Mongo Express (DB UI) | http://localhost:8081 |
 
-### Demo User
-After seeding, you can log in with:
-- **Email**: `demo@example.com`
-- **Password**: `secret123`
+### 5. Register and explore
+Create an account, complete the onboarding quiz, and your dashboard will be personalized based on your answers. Use the settings gear to toggle sections and the "+" button on Coin Prices to manage tracked coins.
 
 ## API Endpoints
 
 ### Auth
-| Method | Endpoint         | Description           | Auth |
-|--------|------------------|-----------------------|------|
-| POST   | /auth/register   | Create a new account  | No   |
-| POST   | /auth/login      | Sign in               | No   |
-| GET    | /auth/me         | Get current user      | Yes  |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | /auth/register | Create a new account | No |
+| POST | /auth/login | Sign in | No |
+| GET | /auth/me | Get current user | Yes |
+| PATCH | /auth/preferences | Update user preferences (coins, sections) | Yes |
 
 ### Content
-| Method | Endpoint         | Description           | Auth |
-|--------|------------------|-----------------------|------|
-| GET    | /coins           | List coins (paginated)| No   |
-| GET    | /coins/:id       | Get coin by ID        | No   |
-| GET    | /insights        | List insights         | No   |
-| GET    | /insights/:id    | Get insight by ID     | No   |
-| GET    | /news            | List news             | No   |
-| GET    | /news/:id        | Get news item by ID   | No   |
-| GET    | /memes           | List memes            | No   |
-| GET    | /memes/:id       | Get meme by ID        | No   |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | /coins | List coins (paginated, filterable by `?symbols=`) | No |
+| GET | /coins/:id | Get coin by ID | No |
+| GET | /insights | List AI insights | No |
+| GET | /insights/:id | Get insight by ID | No |
+| GET | /news | List news articles | No |
+| GET | /news/:id | Get news item by ID | No |
+| GET | /memes | List memes | No |
+| GET | /memes/:id | Get meme by ID | No |
 
 ### External Providers
-| Method | Endpoint           | Description                | Auth |
-|--------|--------------------|----------------------------|------|
-| GET    | /api/news/one      | Fetch hot news (CryptoPanic)| No  |
-| GET    | /api/prices/one    | Fetch BTC price (CoinGecko)| No   |
-| POST   | /api/insight/one   | Generate AI insight        | No   |
-| GET    | /api/meme/one      | Fetch meme (Reddit)        | No   |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | /api/news/one | Fetch hot news (CryptoPanic) | No |
+| GET | /api/prices/one | Fetch BTC price (CoinGecko) | No |
+| POST | /api/insight/one | Generate AI insight (OpenRouter) | No |
+| GET | /api/meme/one | Fetch meme (Reddit) | No |
+| POST | /api/prices/refresh | Refresh all coin prices from CoinGecko | No |
+| POST | /api/meme/refresh | Fetch and store a new random meme | No |
 
 ### Quiz
-| Method | Endpoint         | Description           | Auth |
-|--------|------------------|-----------------------|------|
-| GET    | /quiz/questions  | Get onboarding quiz   | Yes  |
-| POST   | /quiz/answers    | Submit quiz answers   | Yes  |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | /quiz/questions | Get onboarding quiz questions | Yes |
+| POST | /quiz/answers | Submit quiz answers | Yes |
 
 ### Voting
-| Method | Endpoint              | Description                | Auth |
-|--------|-----------------------|----------------------------|------|
-| POST   | /vote/:type/:id       | Vote on content (like/dislike/clear) | Yes |
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | /vote/:type/:id | Vote on content (like/dislike/clear) | Yes |
 
 ## Environment Variables
 
 ### Backend (`backend/.env`)
-| Variable                         | Description                        |
-|----------------------------------|------------------------------------|
-| `PORT`                           | Server port (default: 8080)        |
-| `ORIGIN`                         | CORS allowed origin                |
-| `MONGODB_URI`                    | MongoDB connection string          |
-| `JWT_SECRET`                     | Secret for signing JWT tokens      |
-| `COIN_GECKO_URL`                 | CoinGecko API endpoint             |
-| `CG_API_KEY`                     | CoinGecko demo API key             |
-| `CRYPTOPANIC_URL`                | CryptoPanic API endpoint           |
-| `CRYPTOPANIC_TOKEN`              | CryptoPanic auth token             |
-| `OPENROUTER_URL`                 | OpenRouter API endpoint            |
-| `OPENROUTER_KEY`                 | OpenRouter API key                 |
-| `REDDIT_ACCESS_TOKEN`            | Reddit OAuth2 token endpoint       |
-| `REDDIT_CLIENT_ID`               | Reddit app client ID               |
-| `REDDIT_CLIENT_SECRET`           | Reddit app client secret           |
-| `REDDIT_CRYPTO_CURRENCY_MEMES_URL` | Reddit memes subreddit endpoint  |
-| `REDDIT_BASE_URL`                | Reddit domain base URL             |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `PORT` | Server port (default: 8080) | No |
+| `ORIGIN` | CORS allowed origin | No |
+| `MONGODB_URI` | MongoDB connection string | No (set by Docker Compose) |
+| `JWT_SECRET` | Secret for signing JWT tokens | Yes |
+| `CG_API_KEY` | CoinGecko demo API key (optional, increases rate limits) | No |
+| `CRYPTOPANIC_TOKEN` | CryptoPanic auth token (enables live news) | No |
+| `OPENROUTER_KEY` | OpenRouter API key (enables AI insights) | No |
+| `REDDIT_CLIENT_ID` | Reddit app client ID (optional, public API works without) | No |
+| `REDDIT_CLIENT_SECRET` | Reddit app client secret | No |
 
 ### Frontend (`frontend/.env`)
-| Variable          | Description                    |
-|-------------------|--------------------------------|
-| `VITE_SERVER_URL` | Backend API URL                |
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `VITE_SERVER_URL` | Backend API URL | No (set by Docker Compose) |
+
+### What works without API keys
+- **Coin prices** — CoinGecko public API (rate-limited but functional)
+- **Memes** — Reddit public JSON API (no auth needed)
+- **Voting, quiz, preferences** — all local, no external APIs
+
+### What needs API keys
+- **News** — requires `CRYPTOPANIC_TOKEN` ([get one here](https://cryptopanic.com/developers/api/))
+- **AI Insights** — requires `OPENROUTER_KEY` ([get one here](https://openrouter.ai/keys))
 
 ## Project Structure
 
@@ -144,31 +144,39 @@ After seeding, you can log in with:
 ai-crypto-dashboard/
 ├── backend/
 │   ├── src/
-│   │   ├── controllers/       # Request handlers
-│   │   ├── middleware/         # Auth middleware, error handler
-│   │   ├── models/            # Mongoose schemas
-│   │   ├── routes/            # Express route definitions
-│   │   ├── services/          # External API integrations
-│   │   ├── config.js          # Centralized configuration
+│   │   ├── controllers/        # Request handlers (auth, coins, news, memes, quiz, vote, providers)
+│   │   ├── middleware/         # JWT auth middleware, global error handler
+│   │   ├── models/            # Mongoose schemas (User, Coin, Insight, NewsItem, Meme, Questions)
+│   │   ├── routes/            # Express routers (auth, content, api, quiz, vote)
+│   │   ├── services/          # External API integrations (CoinGecko, CryptoPanic, OpenRouter, Reddit)
+│   │   ├── config.js          # Centralized environment variable reading
 │   │   ├── db.js              # MongoDB connection
-│   │   └── index.js           # Express app entry point
-│   ├── scripts/               # Database seeding
+│   │   ├── index.js           # Express app entry point + auto-seed on startup
+│   │   └── seed.js            # Auto-seed module (coins, quiz questions, sample content)
+│   ├── scripts/seed.js        # Manual seed script (legacy)
+│   ├── .env.example
 │   ├── Dockerfile
 │   └── package.json
 ├── frontend/
 │   ├── src/
-│   │   ├── components/        # React UI components
-│   │   ├── contexts/          # Auth context provider
-│   │   ├── routes/            # Route definitions & guards
-│   │   ├── types/             # TypeScript interfaces
-│   │   ├── utils/             # API client, validation
-│   │   ├── enums/             # Shared enumerations
+│   │   ├── components/
+│   │   │   ├── dashboard/     # CoinsSection, NewsSection, InsightsSection, MemeSection, AddCoinDialog, SectionSettingsDialog
+│   │   │   ├── layout/        # AppShell (AppBar + theme toggle + Outlet)
+│   │   │   └── ui/            # VoteButtons
+│   │   ├── contexts/          # AuthContext (JWT + user state), ThemeContext (dark/light)
+│   │   ├── pages/             # AuthPage, OnboardingPage, DashboardPage
+│   │   ├── routes/            # Route definitions + guards (GuestRoute, OnboardedRoute, NotOnboardedRoute)
+│   │   ├── services/          # API calls (auth.service, dashboard.service, quiz.service)
+│   │   ├── types/             # TypeScript interfaces (Coin, Insight, NewsItem, Meme, User)
+│   │   ├── utils/             # Axios client (api.ts), input validation
 │   │   ├── App.tsx            # Root component
 │   │   ├── main.tsx           # React entry point
 │   │   └── theme.ts           # MUI theme configuration
+│   ├── .env.example
 │   ├── Dockerfile
 │   └── package.json
 ├── docker-compose.yml
+├── LICENSE
 └── README.md
 ```
 
