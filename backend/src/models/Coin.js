@@ -5,8 +5,8 @@ const coinSchema = new Schema(
     symbol: {
       type: String,
       required: true,
+      unique: true,
       uppercase: true,
-      index: true,
     },
     name: { type: String, required: true },
     coingeckoId: { type: String, required: true },

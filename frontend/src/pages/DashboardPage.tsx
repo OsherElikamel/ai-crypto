@@ -76,13 +76,13 @@ const Dashboard = () => {
     news: true,
     meme: true,
   });
-  const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingMeme, setRefreshingMeme] = useState(false);
   const [refreshingNews, setRefreshingNews] = useState(false);
   const [newsPage, setNewsPage] = useState(1);
   const [refreshingInsights, setRefreshingInsights] = useState(false);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "info" }>({ open: false, message: "", severity: "info" });
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "info" | "error" }>({ open: false, message: "", severity: "info" });
+  const showError = (message: string) => setSnackbar({ open: true, message, severity: "error" });
   const [coinDialogOpen, setCoinDialogOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -93,36 +93,48 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
+    if (!showPrices) { setCoins([]); setLoading((l) => ({ ...l, coins: false })); return; }
     let ignore = false;
-
-    (async () => {
-      setError(null);
-      try {
-        const [coinsRes, insightsRes, newsRes, memeRes] = await Promise.all([
-          showPrices ? fetchCoins(10, coinSymbols) : Promise.resolve({ data: { items: [] } }),
-          showInsights ? fetchInsights(3) : Promise.resolve({ data: { items: [] } }),
-          showNews ? fetchNews(8) : Promise.resolve({ data: { items: [] } }),
-          showMemes ? fetchMemes(1) : Promise.resolve({ data: { items: [] } }),
-        ]);
-        if (ignore) return;
-        setCoins(asArray<Coin>(coinsRes.data));
-        setInsights(asArray<Insight>(insightsRes.data));
-        setNews(asArray<NewsItem>(newsRes.data));
-        const memes = asArray<Meme>(memeRes.data);
-        setMeme(memes[0] || null);
-      } catch (e: unknown) {
-        if (!ignore) {
-          const message = e instanceof Error ? e.message : "Failed to load data";
-          setError(message);
-        }
-      } finally {
-        if (!ignore)
-          setLoading({ coins: false, insights: false, news: false, meme: false });
-      }
-    })();
-
+    setLoading((l) => ({ ...l, coins: true }));
+    fetchCoins(10, coinSymbols)
+      .then((res) => { if (!ignore) setCoins(asArray<Coin>(res.data)); })
+      .catch((e) => { if (!ignore) showError(e instanceof Error ? e.message : "Failed to load prices"); })
+      .finally(() => { if (!ignore) setLoading((l) => ({ ...l, coins: false })); });
     return () => { ignore = true; };
-  }, [coinSymbols, showPrices, showNews, showInsights, showMemes]);
+  }, [coinSymbols, showPrices]);
+
+  useEffect(() => {
+    if (!showInsights) { setInsights([]); setLoading((l) => ({ ...l, insights: false })); return; }
+    let ignore = false;
+    setLoading((l) => ({ ...l, insights: true }));
+    fetchInsights(3)
+      .then((res) => { if (!ignore) setInsights(asArray<Insight>(res.data)); })
+      .catch((e) => { if (!ignore) showError(e instanceof Error ? e.message : "Failed to load insights"); })
+      .finally(() => { if (!ignore) setLoading((l) => ({ ...l, insights: false })); });
+    return () => { ignore = true; };
+  }, [showInsights]);
+
+  useEffect(() => {
+    if (!showNews) { setNews([]); setLoading((l) => ({ ...l, news: false })); return; }
+    let ignore = false;
+    setLoading((l) => ({ ...l, news: true }));
+    fetchNews(8)
+      .then((res) => { if (!ignore) setNews(asArray<NewsItem>(res.data)); })
+      .catch((e) => { if (!ignore) showError(e instanceof Error ? e.message : "Failed to load news"); })
+      .finally(() => { if (!ignore) setLoading((l) => ({ ...l, news: false })); });
+    return () => { ignore = true; };
+  }, [showNews]);
+
+  useEffect(() => {
+    if (!showMemes) { setMeme(null); setLoading((l) => ({ ...l, meme: false })); return; }
+    let ignore = false;
+    setLoading((l) => ({ ...l, meme: true }));
+    fetchMemes(1)
+      .then((res) => { if (!ignore) { const m = asArray<Meme>(res.data); setMeme(m[0] || null); } })
+      .catch((e) => { if (!ignore) showError(e instanceof Error ? e.message : "Failed to load meme"); })
+      .finally(() => { if (!ignore) setLoading((l) => ({ ...l, meme: false })); });
+    return () => { ignore = true; };
+  }, [showMemes]);
 
   async function handleRefreshPrices() {
     setRefreshing(true);
@@ -131,7 +143,7 @@ const Dashboard = () => {
       const coinsRes = await fetchCoins(10, coinSymbols);
       setCoins(asArray<Coin>(coinsRes.data));
     } catch {
-      setError("Failed to refresh prices");
+      showError("Failed to refresh prices");
     } finally {
       setRefreshing(false);
     }
@@ -143,7 +155,7 @@ const Dashboard = () => {
       const res = await refreshMeme();
       if (res.data) setMeme(res.data as Meme);
     } catch {
-      setError("Failed to load new meme");
+      showError("Failed to load new meme");
     } finally {
       setRefreshingMeme(false);
     }
@@ -173,7 +185,7 @@ const Dashboard = () => {
         });
       }
     } catch {
-      setError("Failed to refresh news");
+      showError("Failed to refresh news");
     } finally {
       setRefreshingNews(false);
     }
@@ -192,7 +204,7 @@ const Dashboard = () => {
         severity: added > 0 ? "success" : "info",
       });
     } catch {
-      setError("Failed to generate insights");
+      showError("Failed to generate insights");
     } finally {
       setRefreshingInsights(false);
     }
@@ -207,7 +219,7 @@ const Dashboard = () => {
       await updatePreferences({ coins: updated });
       await refreshUser();
     } catch {
-      setError("Failed to update coin preferences");
+      showError("Failed to update coin preferences");
     }
   }, [prefs, refreshUser]);
 
@@ -220,7 +232,7 @@ const Dashboard = () => {
       await updatePreferences({ contentTypes: updated });
       await refreshUser();
     } catch {
-      setError("Failed to update section preferences");
+      showError("Failed to update section preferences");
     }
   }, [contentTypes, refreshUser]);
 
@@ -254,7 +266,7 @@ const Dashboard = () => {
       }
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Voting failed";
-      setError(message);
+      showError(message);
     }
   }
 
@@ -267,12 +279,6 @@ const Dashboard = () => {
           </IconButton>
         </Tooltip>
       </Stack>
-
-      {error && (
-        <Alert severity="error" onClose={() => setError(null)} sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
 
       <Grid container spacing={2.5}>
         {showPrices && (

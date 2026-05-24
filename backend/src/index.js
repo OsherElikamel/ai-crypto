@@ -1,4 +1,3 @@
-import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import config from "./config.js";
@@ -6,7 +5,9 @@ import connectDB from "./db.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { seedIfEmpty } from "./seed.js";
 import { refreshAllPrices } from "./services/coingecko.service.js";
-import { fetchAndStoreMeme, fetchAndStoreNews, fetchAndStoreInsights } from "./controllers/providers.controller.js";
+import { fetchAndStoreInsights } from "./controllers/insight.controller.js";
+import { fetchAndStoreMeme } from "./controllers/meme.controller.js";
+import { fetchAndStoreNews } from "./controllers/news.controller.js";
 
 import apiRoutes from "./routes/api.routes.js";
 import authRoutes from "./routes/auth.routes.js";
@@ -16,8 +17,7 @@ import voteRoutes from "./routes/vote.routes.js";
 
 const app = express();
 app.use(cors({ origin: config.origin, credentials: true }));
-app.use(express.json());
-app.use(cookieParser());
+app.use(express.json({ limit: "1mb" }));
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 

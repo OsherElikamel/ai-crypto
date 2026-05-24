@@ -6,7 +6,6 @@ export interface Preferences {
   fiat: string[];
   depth: "SHORT" | "MEDIUM" | "DEEP" | null;
   alerts: boolean;
-  avoid: string[];
 }
 
 export interface User {

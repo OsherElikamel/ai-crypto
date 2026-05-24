@@ -1,4 +1,5 @@
 import Coin from "../models/Coin.js";
+import { refreshAllPrices } from "../services/coingecko.service.js";
 import { sanitizeItems, sanitizeOne } from "../utils/sanitize.js";
 
 export async function listCoins(req, res) {
@@ -24,4 +25,13 @@ export async function getCoinById(req, res) {
   const doc = await Coin.findById(req.params.id).lean();
   if (!doc) return res.status(404).json({ error: "not found" });
   res.json(sanitizeOne(doc, req.user?._id));
+}
+
+export async function refreshPrices(_req, res) {
+  try {
+    const count = await refreshAllPrices();
+    res.json({ ok: true, updated: count });
+  } catch {
+    res.status(502).json({ error: "Failed to refresh prices from CoinGecko" });
+  }
 }

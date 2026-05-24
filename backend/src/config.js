@@ -12,10 +12,6 @@ const config = {
   gemini: {
     key: process.env.GEMINI_KEY,
   },
-  reddit: {
-    clientId: process.env.REDDIT_CLIENT_ID,
-    clientSecret: process.env.REDDIT_CLIENT_SECRET,
-  },
 };
 
 export default config;

@@ -28,7 +28,3 @@ function extractTickers(categories) {
     .filter((name) => known.has(name));
 }
 
-export async function fetchFirstHotPost() {
-  const items = await fetchLatestNews(1);
-  return items[0] || null;
-}

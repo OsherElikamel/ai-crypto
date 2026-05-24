@@ -50,16 +50,6 @@ const Auth = () => {
     return true;
   }, [submitting, isEmailValid, password, mode, name]);
 
-  const inferNeedsOnboardingFromToken = (token: string): boolean => {
-    try {
-      const base64 = token.split(".")[1];
-      const decoded = JSON.parse(atob(base64));
-      return decoded?.onboarded === false;
-    } catch {
-      return true;
-    }
-  };
-
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
@@ -76,18 +66,16 @@ const Auth = () => {
       const token: string = data?.token;
       if (!token) throw new Error("No token received");
 
-      const needsOnboarding =
-        typeof data?.needsOnboarding === "boolean"
-          ? data.needsOnboarding
-          : inferNeedsOnboardingFromToken(token);
+      const needsOnboarding = data?.needsOnboarding ?? true;
 
       login(token, needsOnboarding);
       navigate(needsOnboarding ? "/onboarding" : "/dashboard", {
         replace: true,
       });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Something went wrong";
+      const axiosErr = err as { response?: { data?: { error?: string } } };
+      const message = axiosErr?.response?.data?.error
+        || (err instanceof Error ? err.message : "Something went wrong");
       setError(message);
     } finally {
       setSubmitting(false);

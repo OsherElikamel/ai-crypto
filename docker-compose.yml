@@ -27,7 +27,6 @@ services:
       ORIGIN: http://localhost:5173
     volumes:
       - ./backend/src:/app/src
-      - ./backend/scripts:/app/scripts
     depends_on:
       - mongo
 

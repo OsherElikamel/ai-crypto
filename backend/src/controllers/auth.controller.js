@@ -5,7 +5,7 @@ import config from "../config.js";
 
 function sign(user) {
   return jwt.sign(
-    { _id: user._id, email: user.email, onboarded: user.onboarded },
+    { _id: user._id, email: user.email },
     config.jwtSecret,
     { expiresIn: config.jwtExpiresIn }
   );
@@ -15,11 +15,19 @@ export async function register(req, res) {
   const { name, email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: "email & password required" });
 
-  const exists = await User.findOne({ email });
+  const emailStr = String(email).trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailStr))
+    return res.status(400).json({ error: "invalid email format" });
+
+  const passStr = String(password);
+  if (passStr.length < 8)
+    return res.status(400).json({ error: "password must be at least 8 characters" });
+
+  const exists = await User.findOne({ email: emailStr });
   if (exists) return res.status(409).json({ error: "email already registered" });
 
-  const passwordHash = await bcrypt.hash(password, 10);
-  const user = await User.create({ name, email, passwordHash, onboarded: false });
+  const passwordHash = await bcrypt.hash(passStr, 10);
+  const user = await User.create({ name: name?.trim(), email: emailStr, passwordHash, onboarded: false });
 
   const token = sign(user);
   res.json({ token, needsOnboarding: true });
@@ -29,10 +37,10 @@ export async function login(req, res) {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: "email & password required" });
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: String(email).trim().toLowerCase() }).select("+passwordHash");
   if (!user) return res.status(401).json({ error: "bad credentials" });
 
-  const ok = await bcrypt.compare(password, user.passwordHash);
+  const ok = await bcrypt.compare(String(password), user.passwordHash);
   if (!ok) return res.status(401).json({ error: "bad credentials" });
 
   const token = sign(user);

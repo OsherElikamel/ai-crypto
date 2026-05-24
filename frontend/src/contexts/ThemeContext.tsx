@@ -109,6 +109,9 @@ function buildTheme(mode: ThemeMode) {
           },
         },
       },
+      MuiCssBaseline: {
+        styleOverrides: `@keyframes spin { to { transform: rotate(360deg); } }`,
+      },
     },
   });
 }

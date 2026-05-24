@@ -18,7 +18,7 @@ api.interceptors.response.use(
   (err) => {
     if (err?.response?.status === 401) {
       localStorage.removeItem("auth_token");
-      window.location.assign("/auth");
+      window.dispatchEvent(new StorageEvent("storage", { key: "auth_token", newValue: null }));
     }
     return Promise.reject(err);
   }

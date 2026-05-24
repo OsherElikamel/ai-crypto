@@ -8,13 +8,12 @@ const preferencesSchema = new Schema({
   fiat: [String],
   depth: { type: String, enum: ["SHORT","MEDIUM","DEEP"], default: "SHORT" },
   alerts: { type: Boolean, default: false },
-  avoid: [String]
 }, { _id: false });
 
 const userSchema = new Schema({
   name: String,
   email: { type: String, unique: true, index: true, required: true },
-  passwordHash: { type: String, required: true },
+  passwordHash: { type: String, required: true, select: false },
   onboarded: { type: Boolean, default: false },
   preferences: preferencesSchema
 }, { timestamps: true });

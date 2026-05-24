@@ -37,7 +37,7 @@ const InsightsSection = ({ items, loading, onLike, onDislike, onClear, onRefresh
           <Tooltip title="Generate new insights">
             <span>
               <IconButton size="small" onClick={onRefresh} disabled={refreshing}>
-                <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none", "@keyframes spin": { "100%": { transform: "rotate(360deg)" } } }} />
+                <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} />
               </IconButton>
             </span>
           </Tooltip>

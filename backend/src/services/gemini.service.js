@@ -3,11 +3,6 @@ import config from "../config.js";
 
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 
-export async function generateInsight(investorType, coins) {
-  const prompt = `Give a 1-2 sentence crypto tip for a ${investorType} who follows ${coins.join(", ")}.`;
-  return await callGemini(prompt);
-}
-
 export async function generateInsights(count = 3, { coins, investorType, risk, depth } = {}) {
   const contextParts = [];
   if (coins?.length) contextParts.push(`The user follows: ${coins.join(", ")}.`);
