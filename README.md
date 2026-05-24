@@ -94,10 +94,6 @@ Create an account, complete the onboarding quiz, and your dashboard will be pers
 ### Refresh (External Providers)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| GET | /api/news/one | Fetch latest news article (CoinDesk) | No |
-| GET | /api/prices/one | Fetch BTC price (CoinGecko) | No |
-| POST | /api/insight/one | Generate a single AI insight (Gemini) | No |
-| GET | /api/meme/one | Fetch a meme (Reddit) | No |
 | POST | /api/prices/refresh | Refresh all coin prices from CoinGecko | Yes |
 | POST | /api/meme/refresh | Fetch and store a new random meme | Yes |
 | POST | /api/news/refresh | Fetch 50 articles from CoinDesk | Yes |
@@ -123,10 +119,9 @@ Create an account, complete the onboarding quiz, and your dashboard will be pers
 | `ORIGIN` | CORS allowed origin | No |
 | `MONGODB_URI` | MongoDB connection string | No (set by Docker Compose) |
 | `JWT_SECRET` | Secret for signing JWT tokens | Yes |
+| `JWT_EXPIRES_IN` | Token expiry duration (default: `7d`) | No |
 | `CG_API_KEY` | CoinGecko demo API key (increases rate limits) | No |
 | `GEMINI_KEY` | Google Gemini API key (enables AI insights) | No |
-| `REDDIT_CLIENT_ID` | Reddit app client ID (public API works without) | No |
-| `REDDIT_CLIENT_SECRET` | Reddit app client secret | No |
 
 ### Frontend (`frontend/.env`)
 | Variable | Description | Required |
@@ -148,7 +143,7 @@ Create an account, complete the onboarding quiz, and your dashboard will be pers
 ai-crypto-dashboard/
 ├── backend/
 │   ├── src/
-│   │   ├── controllers/        # Request handlers (auth, coins, news, memes, quiz, vote, providers)
+│   │   ├── controllers/        # Request handlers (auth, coins, insights, news, memes, quiz, vote)
 │   │   ├── middleware/         # JWT auth (required + optional), global error handler
 │   │   ├── models/            # Mongoose schemas (User, Coin, Insight, NewsItem, Meme, Questions)
 │   │   ├── routes/            # Express routers (auth, content, api, quiz, vote)
@@ -158,7 +153,6 @@ ai-crypto-dashboard/
 │   │   ├── db.js              # MongoDB connection
 │   │   ├── index.js           # Express app entry point + startup data refresh + stale cleanup
 │   │   └── seed.js            # Auto-seed module (coins + quiz questions only)
-│   ├── scripts/seed.js        # Manual seed script (legacy)
 │   ├── .env.example
 │   ├── Dockerfile
 │   └── package.json
@@ -169,6 +163,7 @@ ai-crypto-dashboard/
 │   │   │   ├── layout/        # AppShell (AppBar + theme toggle + Outlet)
 │   │   │   └── ui/            # VoteButtons (reads voteStatus from item)
 │   │   ├── contexts/          # AuthContext (JWT + user state), ThemeContext (dark/light)
+│   │   ├── hooks/             # useDashboardData (data fetching, state, handlers for dashboard)
 │   │   ├── pages/             # AuthPage, OnboardingPage, DashboardPage
 │   │   ├── routes/            # Route definitions + guards (GuestRoute, OnboardedRoute, NotOnboardedRoute)
 │   │   ├── services/          # API calls (auth.service, dashboard.service, quiz.service)
