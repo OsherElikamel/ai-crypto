@@ -2,6 +2,31 @@
 
 A full-stack crypto advisor dashboard that aggregates live coin prices, market news, AI-generated insights, and community memes. Features quiz-based onboarding that personalizes your feed and AI insights, a voting system across all content types, and per-user dashboard customization. Built with React 19, Express 5, MongoDB, and Docker.
 
+![Dashboard](docs/dashboard.png)
+
+<details>
+<summary>More screenshots</summary>
+
+### Dashboard (continued)
+![Dashboard bottom](docs/dashboard_bottom.png)
+
+### Dashboard, Dark Mode
+![Dashboard dark mode](docs/dashboard_dark.png)
+
+### Registration
+![Registration](docs/register.png)
+
+### Onboarding Quiz
+![Onboarding top](docs/onboarding_top.png)
+
+### Onboarding Quiz (continued)
+![Onboarding bottom](docs/onboarding_bottom.png)
+
+### Coin Management
+![Coin management](docs/coin_management.png)
+
+</details>
+
 ## Features
 
 - **Quiz Onboarding** — New users answer questions about investor type, preferred coins, risk level, and content preferences. The dashboard and AI insights adapt to their answers.
