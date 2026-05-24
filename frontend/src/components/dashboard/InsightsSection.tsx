@@ -3,25 +3,28 @@ import {
   Card,
   Chip,
   Divider,
+  IconButton,
   Skeleton,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import VoteButtons from "../ui/VoteButtons.tsx";
-import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { Insight } from "../../types/index.ts";
 
 interface InsightsSectionProps {
   items: Insight[];
   loading: boolean;
-  voteStatuses?: Record<string, VoteStatus>;
   onLike: (item: Insight) => void;
   onDislike: (item: Insight) => void;
   onClear: (item: Insight) => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-const InsightsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onClear }: InsightsSectionProps) => {
+const InsightsSection = ({ items, loading, onLike, onDislike, onClear, onRefresh, refreshing }: InsightsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -29,6 +32,16 @@ const InsightsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike,
         <AutoAwesomeIcon sx={{ color: "primary.main", fontSize: 20 }} />
         <Typography variant="subtitle2" fontWeight={700}>AI Insights</Typography>
         <Typography variant="caption" color="text.secondary">{list.length} generated</Typography>
+        <Box sx={{ flex: 1 }} />
+        {onRefresh && (
+          <Tooltip title="Generate new insights">
+            <span>
+              <IconButton size="small" onClick={onRefresh} disabled={refreshing}>
+                <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none", "@keyframes spin": { "100%": { transform: "rotate(360deg)" } } }} />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
       </Stack>
       <Divider />
 
@@ -71,7 +84,7 @@ const InsightsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike,
                     <Chip key={tk} size="small" label={tk} />
                   ))}
                   <Box sx={{ flex: 1 }} />
-                  <VoteButtons item={ins} status={voteStatuses[ins._id]} onLike={onLike} onDislike={onDislike} onClear={onClear} />
+                  <VoteButtons item={ins} onLike={onLike} onDislike={onDislike} onClear={onClear} />
                 </Stack>
               </Box>
             ))}

@@ -17,11 +17,14 @@ export const fetchCoins = (limit = 10, symbols?: string[]) => {
 export const fetchAllCoins = () =>
   api.get<PaginatedResponse<Coin>>("/coins", { params: { limit: 100 } });
 
-export const fetchInsights = (limit = 3) =>
-  api.get<PaginatedResponse<Insight>>("/insights", { params: { limit } });
+export const fetchInsights = (limit = 3, page = 1) =>
+  api.get<PaginatedResponse<Insight>>("/insights", { params: { limit, page } });
 
-export const fetchNews = (limit = 8) =>
-  api.get<PaginatedResponse<NewsItem>>("/news", { params: { limit } });
+export const refreshInsightsApi = () =>
+  api.post<{ ok: boolean; added: number }>("/api/insights/refresh");
+
+export const fetchNews = (limit = 8, page = 1) =>
+  api.get<PaginatedResponse<NewsItem>>("/news", { params: { limit, page } });
 
 export const fetchMemes = (limit = 1) =>
   api.get<PaginatedResponse<Meme>>("/memes", { params: { limit } });
@@ -34,3 +37,6 @@ export const refreshPrices = () =>
 
 export const refreshMeme = () =>
   api.post("/api/meme/refresh");
+
+export const refreshNewsApi = () =>
+  api.post<{ ok: boolean; added: number }>("/api/news/refresh");

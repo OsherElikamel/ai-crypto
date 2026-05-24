@@ -28,10 +28,9 @@ export interface Coin {
   volume24h?: number | null;
   rank?: number | null;
   priceUpdatedAt?: string | null;
-  likedBy: string[];
-  dislikedBy: string[];
-  likeCount?: number;
-  dislikeCount?: number;
+  likeCount: number;
+  dislikeCount: number;
+  voteStatus: "like" | "dislike" | "none";
 }
 
 export interface Insight {
@@ -40,10 +39,9 @@ export interface Insight {
   text: string;
   tags: string[];
   tickers: string[];
-  likedBy: string[];
-  dislikedBy: string[];
-  likeCount?: number;
-  dislikeCount?: number;
+  likeCount: number;
+  dislikeCount: number;
+  voteStatus: "like" | "dislike" | "none";
 }
 
 export interface NewsItem {
@@ -53,10 +51,9 @@ export interface NewsItem {
   url: string;
   source?: string;
   tickers: string[];
-  likedBy: string[];
-  dislikedBy: string[];
-  likeCount?: number;
-  dislikeCount?: number;
+  likeCount: number;
+  dislikeCount: number;
+  voteStatus: "like" | "dislike" | "none";
   createdAt?: string;
 }
 
@@ -67,10 +64,9 @@ export interface Meme {
   tags: string[];
   source?: string;
   active: boolean;
-  likedBy: string[];
-  dislikedBy: string[];
-  likeCount?: number;
-  dislikeCount?: number;
+  likeCount: number;
+  dislikeCount: number;
+  voteStatus: "like" | "dislike" | "none";
 }
 
 export interface Question {

@@ -3,26 +3,29 @@ import {
   Card,
   Chip,
   Divider,
+  IconButton,
   Link,
   Skeleton,
   Stack,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import VoteButtons from "../ui/VoteButtons.tsx";
-import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { NewsItem } from "../../types/index.ts";
 
 interface NewsSectionProps {
   items: NewsItem[];
   loading: boolean;
-  voteStatuses?: Record<string, VoteStatus>;
   onLike: (item: NewsItem) => void;
   onDislike: (item: NewsItem) => void;
   onClear: (item: NewsItem) => void;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-const NewsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onClear }: NewsSectionProps) => {
+const NewsSection = ({ items, loading, onLike, onDislike, onClear, onRefresh, refreshing }: NewsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -30,6 +33,16 @@ const NewsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onC
         <NewspaperIcon sx={{ color: "primary.main", fontSize: 20 }} />
         <Typography variant="subtitle2" fontWeight={700}>Market News</Typography>
         <Typography variant="caption" color="text.secondary">{list.length} stories</Typography>
+        <Box sx={{ flex: 1 }} />
+        {onRefresh && (
+          <Tooltip title="Refresh news">
+            <span>
+              <IconButton size="small" onClick={onRefresh} disabled={refreshing}>
+                <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none", "@keyframes spin": { "100%": { transform: "rotate(360deg)" } } }} />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
       </Stack>
       <Divider />
 
@@ -64,7 +77,7 @@ const NewsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onC
                       </Typography>
                     )}
                     <Box sx={{ flex: 1 }} />
-                    <VoteButtons item={n} status={voteStatuses[n._id]} onLike={onLike} onDislike={onDislike} onClear={onClear} />
+                    <VoteButtons item={n} onLike={onLike} onDislike={onDislike} onClear={onClear} />
                   </Stack>
                 </Stack>
                 {i < list.length - 1 && <Divider />}

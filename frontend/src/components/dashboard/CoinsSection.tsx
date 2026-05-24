@@ -14,13 +14,11 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import VoteButtons from "../ui/VoteButtons.tsx";
-import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { Coin } from "../../types/index.ts";
 
 interface CoinsSectionProps {
   items: Coin[];
   loading: boolean;
-  voteStatuses?: Record<string, VoteStatus>;
   onLike: (item: Coin) => void;
   onDislike: (item: Coin) => void;
   onClear: (item: Coin) => void;
@@ -51,7 +49,7 @@ function formatChange(val: number | null | undefined) {
   };
 }
 
-const CoinsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, onClear, onRefresh, refreshing, onAddCoin }: CoinsSectionProps) => {
+const CoinsSection = ({ items, loading, onLike, onDislike, onClear, onRefresh, refreshing, onAddCoin }: CoinsSectionProps) => {
   const list = Array.isArray(items) ? items : [];
   return (
     <Card>
@@ -165,7 +163,7 @@ const CoinsSection = ({ items, loading, voteStatuses = {}, onLike, onDislike, on
                       <Typography variant="body2" color="text.secondary">{formatLargeNumber(c.volume24h)}</Typography>
                     </td>
                     <td>
-                      <VoteButtons item={c} status={voteStatuses[c._id]} onLike={onLike} onDislike={onDislike} onClear={onClear} />
+                      <VoteButtons item={c} onLike={onLike} onDislike={onDislike} onClear={onClear} />
                     </td>
                   </tr>
                 );

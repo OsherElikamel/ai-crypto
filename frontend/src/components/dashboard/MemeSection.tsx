@@ -12,13 +12,11 @@ import {
 import SentimentVerySatisfiedIcon from "@mui/icons-material/SentimentVerySatisfied";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import VoteButtons from "../ui/VoteButtons.tsx";
-import type { VoteStatus } from "../ui/VoteButtons.tsx";
 import type { Meme } from "../../types/index.ts";
 
 interface MemeSectionProps {
   item: Meme | null;
   loading: boolean;
-  voteStatuses?: Record<string, VoteStatus>;
   onLike: (item: Meme) => void;
   onDislike: (item: Meme) => void;
   onClear: (item: Meme) => void;
@@ -26,7 +24,7 @@ interface MemeSectionProps {
   refreshing?: boolean;
 }
 
-const MemeSection = ({ item, loading, voteStatuses = {}, onLike, onDislike, onClear, onRefresh, refreshing }: MemeSectionProps) => {
+const MemeSection = ({ item, loading, onLike, onDislike, onClear, onRefresh, refreshing }: MemeSectionProps) => {
   return (
     <Card>
       <Stack direction="row" alignItems="center" gap={1} sx={{ px: 2, py: 1.5 }}>
@@ -89,7 +87,7 @@ const MemeSection = ({ item, loading, voteStatuses = {}, onLike, onDislike, onCl
                 ))}
                 {item.source && <Chip size="small" label={item.source} variant="outlined" />}
               </Stack>
-              <VoteButtons item={item} status={voteStatuses[item._id]} onLike={onLike} onDislike={onDislike} onClear={onClear} />
+              <VoteButtons item={item} onLike={onLike} onDislike={onDislike} onClear={onClear} />
             </Stack>
           </Stack>
         )}

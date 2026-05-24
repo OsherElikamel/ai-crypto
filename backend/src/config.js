@@ -9,11 +9,8 @@ const config = {
   coingecko: {
     apiKey: process.env.CG_API_KEY,
   },
-  cryptopanic: {
-    token: process.env.CRYPTOPANIC_TOKEN,
-  },
-  openrouter: {
-    key: process.env.OPENROUTER_KEY,
+  gemini: {
+    key: process.env.GEMINI_KEY,
   },
   reddit: {
     clientId: process.env.REDDIT_CLIENT_ID,

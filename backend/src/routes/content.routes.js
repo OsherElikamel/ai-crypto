@@ -3,19 +3,20 @@ import { listCoins, getCoinById } from "../controllers/coin.controller.js";
 import { listInsights, getInsightById } from "../controllers/insight.controller.js";
 import { listNews, getNewsById } from "../controllers/news.controller.js";
 import { listMemes, getMemeById } from "../controllers/meme.controller.js";
+import { authOptional } from "../middleware/auth.js";
 
 const router = Router();
 
-router.get("/coins", listCoins);
-router.get("/coins/:id", getCoinById);
+router.get("/coins", authOptional, listCoins);
+router.get("/coins/:id", authOptional, getCoinById);
 
-router.get("/insights", listInsights);
-router.get("/insights/:id", getInsightById);
+router.get("/insights", authOptional, listInsights);
+router.get("/insights/:id", authOptional, getInsightById);
 
-router.get("/news", listNews);
-router.get("/news/:id", getNewsById);
+router.get("/news", authOptional, listNews);
+router.get("/news/:id", authOptional, getNewsById);
 
-router.get("/memes", listMemes);
-router.get("/memes/:id", getMemeById);
+router.get("/memes", authOptional, listMemes);
+router.get("/memes/:id", authOptional, getMemeById);
 
 export default router;

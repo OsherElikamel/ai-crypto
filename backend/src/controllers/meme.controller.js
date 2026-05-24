@@ -1,4 +1,5 @@
 import Meme from "../models/Meme.js";
+import { sanitizeItems, sanitizeOne } from "../utils/sanitize.js";
 
 export async function listMemes(req, res) {
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
@@ -6,15 +7,15 @@ export async function listMemes(req, res) {
   const skip = (page - 1) * limit;
 
   const [items, total] = await Promise.all([
-    Meme.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Meme.find().sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
     Meme.countDocuments(),
   ]);
 
-  res.json({ page, limit, total, items });
+  res.json({ page, limit, total, items: sanitizeItems(items, req.user?._id) });
 }
 
 export async function getMemeById(req, res) {
-  const doc = await Meme.findById(req.params.id);
+  const doc = await Meme.findById(req.params.id).lean();
   if (!doc) return res.status(404).json({ error: "not found" });
-  res.json(doc);
+  res.json(sanitizeOne(doc, req.user?._id));
 }

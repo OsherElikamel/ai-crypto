@@ -3,9 +3,9 @@ import {
   Box,
   Grid,
   IconButton,
+  Snackbar,
   Stack,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import SettingsIcon from "@mui/icons-material/Settings";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -25,6 +25,8 @@ import {
   submitVote,
   refreshPrices,
   refreshMeme,
+  refreshNewsApi,
+  refreshInsightsApi,
 } from "../services/dashboard.service.ts";
 import { updatePreferences } from "../services/auth.service.ts";
 import type {
@@ -35,7 +37,6 @@ import type {
   VotableItem,
   ContentType,
 } from "../types/index.ts";
-import type { VoteStatus } from "../components/ui/VoteButtons.tsx";
 
 function detectType(obj: VotableItem): ContentType | null {
   if ("url" in obj && typeof obj.url === "string") return "news";
@@ -69,8 +70,6 @@ const Dashboard = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [meme, setMeme] = useState<Meme | null>(null);
 
-  const [voteStatuses, setVoteStatuses] = useState<Record<string, VoteStatus>>({});
-
   const [loading, setLoading] = useState({
     coins: true,
     insights: true,
@@ -80,6 +79,10 @@ const Dashboard = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [refreshingMeme, setRefreshingMeme] = useState(false);
+  const [refreshingNews, setRefreshingNews] = useState(false);
+  const [newsPage, setNewsPage] = useState(1);
+  const [refreshingInsights, setRefreshingInsights] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "info" }>({ open: false, message: "", severity: "info" });
   const [coinDialogOpen, setCoinDialogOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -146,6 +149,55 @@ const Dashboard = () => {
     }
   }
 
+  async function handleRefreshNews() {
+    setRefreshingNews(true);
+    try {
+      const nextPage = newsPage + 1;
+      const newsRes = await fetchNews(8, nextPage);
+      const items = asArray<NewsItem>(newsRes.data);
+
+      if (items.length > 0) {
+        setNews(items);
+        setNewsPage(nextPage);
+        setSnackbar({ open: true, message: "Showing next batch of articles", severity: "success" });
+      } else {
+        const refreshRes = await refreshNewsApi();
+        const added = refreshRes.data?.added ?? 0;
+        const freshRes = await fetchNews(8, 1);
+        setNews(asArray<NewsItem>(freshRes.data));
+        setNewsPage(1);
+        setSnackbar({
+          open: true,
+          message: added > 0 ? `${added} new articles fetched` : "No new articles right now — check back later",
+          severity: added > 0 ? "success" : "info",
+        });
+      }
+    } catch {
+      setError("Failed to refresh news");
+    } finally {
+      setRefreshingNews(false);
+    }
+  }
+
+  async function handleRefreshInsights() {
+    setRefreshingInsights(true);
+    try {
+      const refreshRes = await refreshInsightsApi();
+      const added = refreshRes.data?.added ?? 0;
+      const insightsRes = await fetchInsights(3);
+      setInsights(asArray<Insight>(insightsRes.data));
+      setSnackbar({
+        open: true,
+        message: added > 0 ? `${added} new insights generated` : "Could not generate insights right now",
+        severity: added > 0 ? "success" : "info",
+      });
+    } catch {
+      setError("Failed to generate insights");
+    } finally {
+      setRefreshingInsights(false);
+    }
+  }
+
   const handleToggleCoin = useCallback(async (symbol: string) => {
     const current = prefs?.coins ?? [];
     const updated = current.includes(symbol)
@@ -180,28 +232,24 @@ const Dashboard = () => {
       const { data } = await submitVote(type, obj._id, action);
       const { likes, dislikes, status } = data;
 
-      setVoteStatuses((prev) => ({ ...prev, [obj._id]: status || "none" }));
+      const patch = { likeCount: likes, dislikeCount: dislikes, voteStatus: status || ("none" as const) };
 
-      const applyCounts = <T extends VotableItem>(
+      const applyPatch = <T extends VotableItem>(
         setter: React.Dispatch<React.SetStateAction<T[]>>
       ) => {
         setter((prev) =>
           prev.map((item) =>
-            item._id === obj._id
-              ? { ...item, likeCount: likes, dislikeCount: dislikes }
-              : item
+            item._id === obj._id ? { ...item, ...patch } : item
           )
         );
       };
 
-      if (type === "coins") applyCounts(setCoins);
-      else if (type === "insights") applyCounts(setInsights);
-      else if (type === "news") applyCounts(setNews);
+      if (type === "coins") applyPatch(setCoins);
+      else if (type === "insights") applyPatch(setInsights);
+      else if (type === "news") applyPatch(setNews);
       else if (type === "memes") {
         setMeme((m) =>
-          m && m._id === obj._id
-            ? { ...m, likeCount: likes, dislikeCount: dislikes }
-            : m
+          m && m._id === obj._id ? { ...m, ...patch } : m
         );
       }
     } catch (e: unknown) {
@@ -232,7 +280,6 @@ const Dashboard = () => {
             <CoinsSection
               items={coins}
               loading={loading.coins}
-              voteStatuses={voteStatuses}
               onLike={(c) => handleVote(c, "like")}
               onDislike={(c) => handleVote(c, "dislike")}
               onClear={(c) => handleVote(c, "clear")}
@@ -248,10 +295,11 @@ const Dashboard = () => {
             <NewsSection
               items={news}
               loading={loading.news}
-              voteStatuses={voteStatuses}
               onLike={(n) => handleVote(n, "like")}
               onDislike={(n) => handleVote(n, "dislike")}
               onClear={(n) => handleVote(n, "clear")}
+              onRefresh={handleRefreshNews}
+              refreshing={refreshingNews}
             />
           </Grid>
         )}
@@ -261,10 +309,11 @@ const Dashboard = () => {
             <InsightsSection
               items={insights}
               loading={loading.insights}
-              voteStatuses={voteStatuses}
               onLike={(i) => handleVote(i, "like")}
               onDislike={(i) => handleVote(i, "dislike")}
               onClear={(i) => handleVote(i, "clear")}
+              onRefresh={handleRefreshInsights}
+              refreshing={refreshingInsights}
             />
           </Grid>
         )}
@@ -274,7 +323,6 @@ const Dashboard = () => {
             <MemeSection
               item={meme}
               loading={loading.meme}
-              voteStatuses={voteStatuses}
               onLike={(m) => handleVote(m, "like")}
               onDislike={(m) => handleVote(m, "dislike")}
               onClear={(m) => handleVote(m, "clear")}
@@ -299,6 +347,17 @@ const Dashboard = () => {
         activeTypes={contentTypes.length > 0 ? contentTypes : ["Prices", "News", "Insights", "Memes"]}
         onToggle={handleToggleSection}
       />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity={snackbar.severity} variant="filled" onClose={() => setSnackbar((s) => ({ ...s, open: false }))}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
