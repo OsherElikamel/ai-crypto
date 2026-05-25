@@ -25,7 +25,8 @@ export async function refreshNews(_req, res) {
   try {
     const count = await fetchAndStoreNews();
     res.json({ ok: true, added: count });
-  } catch {
+  } catch (err) {
+    console.error("News refresh failed:", err);
     res.status(502).json({ error: "Failed to refresh news" });
   }
 }

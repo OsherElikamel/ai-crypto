@@ -26,7 +26,8 @@ export async function refreshMeme(req, res) {
     const doc = await fetchAndStoreMeme();
     const sanitized = doc ? sanitizeOne(doc.toObject(), req.user?._id) : null;
     res.json(sanitized);
-  } catch {
+  } catch (err) {
+    console.error("Meme refresh failed:", err);
     res.status(502).json({ error: "Failed to refresh meme from Reddit" });
   }
 }

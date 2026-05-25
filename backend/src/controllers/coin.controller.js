@@ -31,7 +31,8 @@ export async function refreshPrices(_req, res) {
   try {
     const count = await refreshAllPrices();
     res.json({ ok: true, updated: count });
-  } catch {
+  } catch (err) {
+    console.error("CoinGecko refresh failed:", err);
     res.status(502).json({ error: "Failed to refresh prices from CoinGecko" });
   }
 }

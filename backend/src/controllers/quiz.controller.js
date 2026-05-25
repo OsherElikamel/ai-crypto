@@ -38,7 +38,8 @@ export const getQuizQuestions = async (_req, res) => {
       .lean();
 
     return res.json({ questions });
-  } catch {
+  } catch (err) {
+    console.error("Quiz questions load failed:", err);
     return res.status(500).json({ error: "Failed to load questions" });
   }
 };

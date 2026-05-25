@@ -28,7 +28,8 @@ export async function refreshInsightsEndpoint(req, res) {
     const prefs = await getUserPrefs(req.user?._id);
     const count = await fetchAndStoreInsights({ prefs });
     res.json({ ok: true, added: count });
-  } catch {
+  } catch (err) {
+    console.error("Insights refresh failed:", err);
     res.status(502).json({ error: "Failed to generate insights" });
   }
 }
