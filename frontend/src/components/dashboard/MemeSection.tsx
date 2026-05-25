@@ -34,7 +34,7 @@ const MemeSection = ({ item, loading, onLike, onDislike, onClear, onRefresh, ref
         {onRefresh && (
           <Tooltip title="Load new meme">
             <span>
-              <IconButton size="small" onClick={onRefresh} disabled={refreshing}>
+              <IconButton aria-label="Load new meme" size="small" onClick={onRefresh} disabled={refreshing}>
                 <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} />
               </IconButton>
             </span>

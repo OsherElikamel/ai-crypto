@@ -53,7 +53,7 @@ const Dashboard = () => {
     <Box sx={{ maxWidth: 1400, mx: "auto", px: { xs: 2, md: 4 }, py: 3 }}>
       <Stack direction="row" alignItems="center" justifyContent="flex-end" sx={{ mb: 1 }}>
         <Tooltip title="Dashboard settings">
-          <IconButton onClick={() => setSettingsOpen(true)} size="small">
+          <IconButton aria-label="Dashboard settings" onClick={() => setSettingsOpen(true)} size="small">
             <SettingsIcon fontSize="small" />
           </IconButton>
         </Tooltip>

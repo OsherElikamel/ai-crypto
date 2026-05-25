@@ -36,7 +36,7 @@ const InsightsSection = ({ items, loading, onLike, onDislike, onClear, onRefresh
         {onRefresh && (
           <Tooltip title="Generate new insights">
             <span>
-              <IconButton size="small" onClick={onRefresh} disabled={refreshing}>
+              <IconButton aria-label="Generate new insights" size="small" onClick={onRefresh} disabled={refreshing}>
                 <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} />
               </IconButton>
             </span>

@@ -37,7 +37,7 @@ const NewsSection = ({ items, loading, onLike, onDislike, onClear, onRefresh, re
         {onRefresh && (
           <Tooltip title="Refresh news">
             <span>
-              <IconButton size="small" onClick={onRefresh} disabled={refreshing}>
+              <IconButton aria-label="Refresh news" size="small" onClick={onRefresh} disabled={refreshing}>
                 <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} />
               </IconButton>
             </span>

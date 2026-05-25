@@ -60,7 +60,7 @@ const CoinsSection = ({ items, loading, onLike, onDislike, onClear, onRefresh, r
         <Box sx={{ flex: 1 }} />
         {onAddCoin && (
           <Tooltip title="Add / remove coins">
-            <IconButton size="small" onClick={onAddCoin}>
+            <IconButton aria-label="Add or remove coins" size="small" onClick={onAddCoin}>
               <AddIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -68,7 +68,7 @@ const CoinsSection = ({ items, loading, onLike, onDislike, onClear, onRefresh, r
         {onRefresh && (
           <Tooltip title="Refresh prices">
             <span>
-              <IconButton size="small" onClick={onRefresh} disabled={refreshing}>
+              <IconButton aria-label="Refresh prices" size="small" onClick={onRefresh} disabled={refreshing}>
                 <RefreshIcon fontSize="small" sx={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} />
               </IconButton>
             </span>
