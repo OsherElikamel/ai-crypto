@@ -22,6 +22,8 @@ export async function register(req, res) {
   const passStr = String(password);
   if (passStr.length < 8)
     return res.status(400).json({ error: "password must be at least 8 characters" });
+  if (!/[A-Z]/.test(passStr) || !/\d/.test(passStr))
+    return res.status(400).json({ error: "password must contain at least one uppercase letter and one number" });
 
   const exists = await User.findOne({ email: emailStr });
   if (exists) return res.status(409).json({ error: "email already registered" });
@@ -63,13 +65,23 @@ export async function me(req, res) {
   });
 }
 
+const ENUM_VALUES = {
+  investorType: ["HODL", "DABBLER", "TRADER", "NFT_DEFI"],
+  risk: ["LOW", "MEDIUM", "HIGH"],
+  depth: ["SHORT", "MEDIUM", "DEEP"],
+};
+
 export async function updatePreferences(req, res) {
   const updates = req.body || {};
   const allowed = ["coins", "contentTypes", "investorType", "risk", "fiat", "depth", "alerts"];
 
   const $set = {};
   for (const key of allowed) {
-    if (key in updates) $set[`preferences.${key}`] = updates[key];
+    if (!(key in updates)) continue;
+    const val = updates[key];
+    if (key in ENUM_VALUES && !ENUM_VALUES[key].includes(val))
+      return res.status(400).json({ error: `invalid ${key}: must be one of ${ENUM_VALUES[key].join(", ")}` });
+    $set[`preferences.${key}`] = val;
   }
 
   if (!Object.keys($set).length) return res.status(400).json({ error: "nothing to update" });
