@@ -5,7 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --verbose --runInBand",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
     "seed": "node --env-file=.env src/seed.js"
@@ -32,6 +32,8 @@
     "mongoose": "^8.19.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.2.2"
   }
 }
