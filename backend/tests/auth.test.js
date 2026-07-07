@@ -13,7 +13,7 @@ describe("POST /auth/register", () => {
       email: "alice@example.com",
       password: "Secret1234",
     });
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(201);
     expect(res.body.token).toBeDefined();
     expect(res.body.needsOnboarding).toBe(true);
   });

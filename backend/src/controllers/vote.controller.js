@@ -12,19 +12,15 @@ const MODEL_MAP = {
 };
 
 export async function vote(req, res) {
-  try {
-    const { type, id } = req.params;
-    const { vote: action } = req.body || {};
-    const Model = MODEL_MAP[type];
-    if (!Model) return res.status(400).json({ error: "invalid type" });
-    if (!id) return res.status(400).json({ error: "missing id" });
-    if (!action) return res.status(400).json({ error: "missing vote" });
+  const { type, id } = req.params;
+  const { vote: action } = req.body || {};
+  const Model = MODEL_MAP[type];
+  if (!Model) return res.status(400).json({ error: "invalid type" });
+  if (!action) return res.status(400).json({ error: "missing vote" });
 
-    const result = await voteOnDoc(Model, id, req.user._id, action);
-    return res.json({ ok: true, ...result });
-  } catch (err) {
-    const code = err.status || 500;
-    return res.status(code).json({ error: err.message || "internal error" });
-  }
+  // voteOnDoc throws errors carrying a .status — the global error
+  // handler returns those messages as-is and hides real 500 details.
+  const result = await voteOnDoc(Model, id, req.user._id, action);
+  return res.json({ ok: true, ...result });
 }
 

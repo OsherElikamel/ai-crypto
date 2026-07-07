@@ -29,10 +29,17 @@ export async function register(req, res) {
   if (exists) return res.status(409).json({ error: "email already registered" });
 
   const passwordHash = await bcrypt.hash(passStr, 10);
-  const user = await User.create({ name: name?.trim(), email: emailStr, passwordHash, onboarded: false });
+  let user;
+  try {
+    user = await User.create({ name: name?.trim(), email: emailStr, passwordHash, onboarded: false });
+  } catch (err) {
+    // unique-index race: two concurrent registrations with the same email
+    if (err.code === 11000) return res.status(409).json({ error: "email already registered" });
+    throw err;
+  }
 
   const token = sign(user);
-  res.json({ token, needsOnboarding: true });
+  res.status(201).json({ token, needsOnboarding: true });
 }
 
 export async function login(req, res) {

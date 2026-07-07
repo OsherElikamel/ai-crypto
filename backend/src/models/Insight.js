@@ -12,7 +12,7 @@ const insightSchema = new Schema(
   { timestamps: true }
 );
 
-insightSchema.index({ tickers: 1 });
-insightSchema.index({ tags: 1 });
+// Every list query sorts by createdAt — index that, not fields we never filter on.
+insightSchema.index({ createdAt: -1 });
 
 export default mongoose.model("Insight", insightSchema);

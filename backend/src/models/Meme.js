@@ -13,4 +13,6 @@ const memeSchema = new Schema(
   { timestamps: true }
 );
 
+memeSchema.index({ createdAt: -1 });
+
 export default mongoose.model("Meme", memeSchema);

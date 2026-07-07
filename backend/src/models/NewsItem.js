@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 const newsItemSchema = new Schema(
   {
-    sourceId: { type: String, index: true },
+    sourceId: { type: String },
     title: { type: String, required: true },
     url: { type: String, required: true, unique: true },
     source: String,
@@ -13,5 +13,5 @@ const newsItemSchema = new Schema(
   { timestamps: true }
 );
 
-newsItemSchema.index({ tickers: 1 });
+newsItemSchema.index({ createdAt: -1 });
 export default mongoose.model("NewsItem", newsItemSchema);
