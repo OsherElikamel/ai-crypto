@@ -1,11 +1,14 @@
+import { lazy, Suspense, type ReactNode } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext.tsx";
 import { CircularProgress, Box } from "@mui/material";
 import Auth from "../pages/AuthPage.tsx";
-import Onboarding from "../pages/OnboardingPage.tsx";
-import Dashboard from "../pages/DashboardPage.tsx";
 import AppShell from "../components/layout/AppShell.tsx";
-import type { ReactNode } from "react";
+
+// Authenticated pages are code-split so the auth screen doesn't pay
+// for the full dashboard bundle up front.
+const Onboarding = lazy(() => import("../pages/OnboardingPage.tsx"));
+const Dashboard = lazy(() => import("../pages/DashboardPage.tsx"));
 
 function LoadingScreen() {
   return (
@@ -52,7 +55,8 @@ function GuestRoute({ children }: { children: ReactNode }) {
 
 export default function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
       <Route path="/" element={<Navigate to="/auth" replace />} />
       <Route
         path="/auth"
@@ -72,7 +76,8 @@ export default function AppRoutes() {
         <Route path="/onboarding" element={<NotOnboardedRoute><Onboarding /></NotOnboardedRoute>} />
         <Route path="/dashboard" element={<OnboardedRoute><Dashboard /></OnboardedRoute>} />
       </Route>
-      <Route path="*" element={<Navigate to="/auth" replace />} />
-    </Routes>
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    </Suspense>
   );
 }

@@ -68,7 +68,7 @@ const Auth = () => {
 
       const needsOnboarding = data?.needsOnboarding ?? true;
 
-      login(token, needsOnboarding);
+      login(token);
       navigate(needsOnboarding ? "/onboarding" : "/dashboard", {
         replace: true,
       });

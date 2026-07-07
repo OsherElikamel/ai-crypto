@@ -140,7 +140,8 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   return (
     <ThemeContext value={{ mode, toggleTheme }}>
       <MuiThemeProvider theme={theme}>
-        <CssBaseline />
+        {/* enableColorScheme keeps native widgets and scrollbars in sync with the theme */}
+        <CssBaseline enableColorScheme />
         {children}
       </MuiThemeProvider>
     </ThemeContext>

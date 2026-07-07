@@ -13,7 +13,7 @@ interface AuthContextValue {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (token: string, needsOnboarding: boolean) => void;
+  login: (token: string) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch { /* ignore */ }
   }, []);
 
-  const login = (newToken: string, _needsOnboarding: boolean) => {
+  const login = (newToken: string) => {
     localStorage.setItem("auth_token", newToken);
     setToken(newToken);
   };
