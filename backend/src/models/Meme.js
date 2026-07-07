@@ -7,8 +7,6 @@ const memeSchema = new Schema(
     tags: [String],
     source: String,
     active: { type: Boolean, default: true },
-    likedBy: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
-    dislikedBy: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   },
   { timestamps: true }
 );

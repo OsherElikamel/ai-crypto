@@ -2,7 +2,7 @@ import config from "../config.js";
 import Insight from "../models/Insight.js";
 import User from "../models/User.js";
 import { generateInsights } from "../services/gemini.service.js";
-import { sanitizeItems, sanitizeOne } from "../utils/sanitize.js";
+import { attachVotes, attachVotesToOne } from "../services/vote.service.js";
 
 export async function listInsights(req, res) {
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
@@ -14,13 +14,13 @@ export async function listInsights(req, res) {
     Insight.countDocuments()
   ]);
 
-  res.json({ page, limit, total, items: sanitizeItems(items, req.user?._id) });
+  res.json({ page, limit, total, items: await attachVotes("insights", items, req.user?._id) });
 }
 
 export async function getInsightById(req, res) {
   const doc = await Insight.findById(req.params.id).lean();
   if (!doc) return res.status(404).json({ error: "not found" });
-  res.json(sanitizeOne(doc, req.user?._id));
+  res.json(await attachVotesToOne("insights", doc, req.user?._id));
 }
 
 export async function refreshInsightsEndpoint(req, res) {

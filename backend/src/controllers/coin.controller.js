@@ -1,6 +1,6 @@
 import Coin from "../models/Coin.js";
 import { refreshAllPrices } from "../services/coingecko.service.js";
-import { sanitizeItems, sanitizeOne } from "../utils/sanitize.js";
+import { attachVotes, attachVotesToOne } from "../services/vote.service.js";
 
 export async function listCoins(req, res) {
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
@@ -18,13 +18,13 @@ export async function listCoins(req, res) {
     Coin.countDocuments(filter)
   ]);
 
-  res.json({ page, limit, total, items: sanitizeItems(items, req.user?._id) });
+  res.json({ page, limit, total, items: await attachVotes("coins", items, req.user?._id) });
 }
 
 export async function getCoinById(req, res) {
   const doc = await Coin.findById(req.params.id).lean();
   if (!doc) return res.status(404).json({ error: "not found" });
-  res.json(sanitizeOne(doc, req.user?._id));
+  res.json(await attachVotesToOne("coins", doc, req.user?._id));
 }
 
 export async function refreshPrices(_req, res) {

@@ -1,6 +1,6 @@
 import Meme from "../models/Meme.js";
 import { fetchManyMemes } from "../services/reddit.service.js";
-import { sanitizeItems, sanitizeOne } from "../utils/sanitize.js";
+import { attachVotes, attachVotesToOne } from "../services/vote.service.js";
 
 export async function listMemes(req, res) {
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
@@ -12,20 +12,20 @@ export async function listMemes(req, res) {
     Meme.countDocuments(),
   ]);
 
-  res.json({ page, limit, total, items: sanitizeItems(items, req.user?._id) });
+  res.json({ page, limit, total, items: await attachVotes("memes", items, req.user?._id) });
 }
 
 export async function getMemeById(req, res) {
   const doc = await Meme.findById(req.params.id).lean();
   if (!doc) return res.status(404).json({ error: "not found" });
-  res.json(sanitizeOne(doc, req.user?._id));
+  res.json(await attachVotesToOne("memes", doc, req.user?._id));
 }
 
 export async function refreshMeme(req, res) {
   try {
     const doc = await fetchAndStoreMeme();
-    const sanitized = doc ? sanitizeOne(doc.toObject(), req.user?._id) : null;
-    res.json(sanitized);
+    const withVotes = doc ? await attachVotesToOne("memes", doc.toObject(), req.user?._id) : null;
+    res.json(withVotes);
   } catch (err) {
     console.error("Meme refresh failed:", err);
     res.status(502).json({ error: "Failed to refresh meme from Reddit" });

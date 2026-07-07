@@ -6,8 +6,6 @@ const insightSchema = new Schema(
     text: { type: String, required: true },
     tags: [String],
     tickers: [String],
-    likedBy: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
-    dislikedBy: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   },
   { timestamps: true }
 );

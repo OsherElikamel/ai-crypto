@@ -8,7 +8,8 @@
     "test": "node --experimental-vm-modules node_modules/.bin/jest --verbose --runInBand",
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "seed": "node --env-file=.env src/seed.js"
+    "seed": "node --env-file=.env src/seed.js",
+    "migrate:votes": "node src/migrations/migrate-votes.js"
   },
   "repository": {
     "type": "git",

@@ -16,8 +16,6 @@ const coinSchema = new Schema(
     volume24h: { type: Number, default: null },
     rank: { type: Number, default: null },
     priceUpdatedAt: { type: Date, default: null },
-    likedBy: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
-    dislikedBy: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
   },
   { timestamps: true }
 );

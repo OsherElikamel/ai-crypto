@@ -1,6 +1,6 @@
 import NewsItem from "../models/NewsItem.js";
 import { fetchLatestNews } from "../services/news.service.js";
-import { sanitizeItems, sanitizeOne } from "../utils/sanitize.js";
+import { attachVotes, attachVotesToOne } from "../services/vote.service.js";
 
 export async function listNews(req, res) {
   const limit = Math.max(1, Math.min(100, Number(req.query.limit) || 10));
@@ -12,13 +12,13 @@ export async function listNews(req, res) {
     NewsItem.countDocuments()
   ]);
 
-  res.json({ page, limit, total, items: sanitizeItems(items, req.user?._id) });
+  res.json({ page, limit, total, items: await attachVotes("news", items, req.user?._id) });
 }
 
 export async function getNewsById(req, res) {
   const doc = await NewsItem.findById(req.params.id).lean();
   if (!doc) return res.status(404).json({ error: "not found" });
-  res.json(sanitizeOne(doc, req.user?._id));
+  res.json(await attachVotesToOne("news", doc, req.user?._id));
 }
 
 export async function refreshNews(_req, res) {
